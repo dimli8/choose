@@ -1,0 +1,166 @@
+0 verbose cli C:\Program Files\nodejs\node.exe C:\Program Files\nodejs\node_modules\npm\bin\npm-cli.js
+1 info using npm@11.9.0
+2 info using node@v24.14.0
+3 silly config load:file:C:\Program Files\nodejs\node_modules\npm\npmrc
+4 silly config load:file:C:\Users\dimli\Desktop\新建文件夹\choose-main\.npmrc
+5 silly config load:file:C:\Users\dimli\.npmrc
+6 silly config load:file:C:\Program Files\nodejs\node_global\etc\npmrc
+7 verbose title npm install
+8 verbose argv "install" "--force"
+9 verbose logfile logs-max:10 dir:C:\Users\dimli\Desktop\新建文件夹\choose-main\.npm-cache\_logs\2026-04-11T07_15_39_967Z-
+10 verbose logfile C:\Users\dimli\Desktop\新建文件夹\choose-main\.npm-cache\_logs\2026-04-11T07_15_39_967Z-debug-0.log
+11 warn using --force Recommended protections disabled.
+12 silly logfile start cleaning logs, removing 1 files
+13 silly packumentCache heap:4496293888 maxSize:1124073472 maxEntrySize:562036736
+14 silly idealTree buildDeps
+15 silly fetch manifest @anthropic-ai/sdk@^0.62.0
+16 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fsdk cache-miss
+17 http cache https://registry.npmjs.org/@anthropic-ai%2fsdk 23ms (cache hit)
+18 silly packumentCache full:https://registry.npmjs.org/@anthropic-ai%2fsdk set size:726662 disposed:false
+19 silly fetch manifest @aws-sdk/client-ses@^3.668.0
+20 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-ses cache-miss
+21 http cache https://registry.npmjs.org/@aws-sdk%2fclient-ses 16ms (cache hit)
+22 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-ses set size:2709217 disposed:false
+23 silly fetch manifest @aws-sdk/client-s3@^3.668.0
+24 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-s3 cache-miss
+25 http cache https://registry.npmjs.org/@aws-sdk%2fclient-s3 21ms (cache hit)
+26 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-s3 set size:3715236 disposed:false
+27 silly fetch manifest @aws-sdk/s3-request-presigner@^3.668.0
+28 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fs3-request-presigner cache-miss
+29 silly logfile done cleaning log files
+30 http cache https://registry.npmjs.org/@aws-sdk%2fs3-request-presigner 22ms (cache hit)
+31 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fs3-request-presigner set size:2252357 disposed:false
+32 silly fetch manifest @google/generative-ai@^0.24.1
+33 silly packumentCache full:https://registry.npmjs.org/@google%2fgenerative-ai cache-miss
+34 http cache https://registry.npmjs.org/@google%2fgenerative-ai 10ms (cache hit)
+35 silly packumentCache full:https://registry.npmjs.org/@google%2fgenerative-ai set size:118041 disposed:false
+36 silly fetch manifest @supabase/supabase-js@^2.49.4
+37 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js cache-miss
+38 http cache https://registry.npmjs.org/@supabase%2fsupabase-js 16ms (cache hit)
+39 silly packumentCache full:https://registry.npmjs.org/@supabase%2fsupabase-js set size:2889668 disposed:false
+40 silly fetch manifest @types/bcryptjs@^2.4.6
+41 silly packumentCache full:https://registry.npmjs.org/@types%2fbcryptjs cache-miss
+42 http cache https://registry.npmjs.org/@types%2fbcryptjs 11ms (cache hit)
+43 silly packumentCache full:https://registry.npmjs.org/@types%2fbcryptjs set size:28223 disposed:false
+44 silly fetch manifest @types/jsonwebtoken@^9.0.9
+45 silly packumentCache full:https://registry.npmjs.org/@types%2fjsonwebtoken cache-miss
+46 http cache https://registry.npmjs.org/@types%2fjsonwebtoken 9ms (cache hit)
+47 silly packumentCache full:https://registry.npmjs.org/@types%2fjsonwebtoken set size:129919 disposed:false
+48 silly fetch manifest @types/passport@^1.0.17
+49 silly packumentCache full:https://registry.npmjs.org/@types%2fpassport cache-miss
+50 http cache https://registry.npmjs.org/@types%2fpassport 9ms (cache hit)
+51 silly packumentCache full:https://registry.npmjs.org/@types%2fpassport set size:96041 disposed:false
+52 silly fetch manifest @types/passport-jwt@^4.0.1
+53 silly packumentCache full:https://registry.npmjs.org/@types%2fpassport-jwt cache-miss
+54 http cache https://registry.npmjs.org/@types%2fpassport-jwt 9ms (cache hit)
+55 silly packumentCache full:https://registry.npmjs.org/@types%2fpassport-jwt set size:62298 disposed:false
+56 silly fetch manifest @types/passport-local@^1.0.38
+57 silly packumentCache full:https://registry.npmjs.org/@types%2fpassport-local cache-miss
+58 http cache https://registry.npmjs.org/@types%2fpassport-local 8ms (cache hit)
+59 silly packumentCache full:https://registry.npmjs.org/@types%2fpassport-local set size:32305 disposed:false
+60 silly fetch manifest @vercel/postgres@^0.10.0
+61 silly packumentCache full:https://registry.npmjs.org/@vercel%2fpostgres cache-miss
+62 http cache https://registry.npmjs.org/@vercel%2fpostgres 9ms (cache hit)
+63 silly packumentCache full:https://registry.npmjs.org/@vercel%2fpostgres set size:247667 disposed:false
+64 silly fetch manifest axios@^1.7.9
+65 silly packumentCache full:https://registry.npmjs.org/axios cache-miss
+66 http cache https://registry.npmjs.org/axios 9ms (cache hit)
+67 silly packumentCache full:https://registry.npmjs.org/axios set size:783441 disposed:false
+68 silly fetch manifest @sendgrid/mail@^8.1.4
+69 silly packumentCache full:https://registry.npmjs.org/@sendgrid%2fmail cache-miss
+70 http cache https://registry.npmjs.org/@sendgrid%2fmail 11ms (cache hit)
+71 silly packumentCache full:https://registry.npmjs.org/@sendgrid%2fmail set size:148115 disposed:false
+72 silly fetch manifest mailgun.js@^10.2.1
+73 silly packumentCache full:https://registry.npmjs.org/mailgun.js cache-miss
+74 http cache https://registry.npmjs.org/mailgun.js 12ms (cache hit)
+75 silly packumentCache full:https://registry.npmjs.org/mailgun.js set size:475376 disposed:false
+76 silly fetch manifest form-data@^4.0.0
+77 silly packumentCache full:https://registry.npmjs.org/form-data cache-miss
+78 http cache https://registry.npmjs.org/form-data 15ms (cache hit)
+79 silly packumentCache full:https://registry.npmjs.org/form-data set size:153646 disposed:false
+80 silly fetch manifest resend@^4.0.0
+81 silly packumentCache full:https://registry.npmjs.org/resend cache-miss
+82 http cache https://registry.npmjs.org/resend 14ms (cache hit)
+83 silly packumentCache full:https://registry.npmjs.org/resend set size:386111 disposed:false
+84 silly fetch manifest nodemailer@^7.0.9
+85 silly packumentCache full:https://registry.npmjs.org/nodemailer cache-miss
+86 http cache https://registry.npmjs.org/nodemailer 16ms (cache hit)
+87 silly packumentCache full:https://registry.npmjs.org/nodemailer set size:572865 disposed:false
+88 silly fetch manifest bcryptjs@^3.0.2
+89 silly packumentCache full:https://registry.npmjs.org/bcryptjs cache-miss
+90 http cache https://registry.npmjs.org/bcryptjs 9ms (cache hit)
+91 silly packumentCache full:https://registry.npmjs.org/bcryptjs set size:80409 disposed:false
+92 silly fetch manifest cors@^2.8.5
+93 silly packumentCache full:https://registry.npmjs.org/cors cache-miss
+94 http cache https://registry.npmjs.org/cors 9ms (cache hit)
+95 silly packumentCache full:https://registry.npmjs.org/cors set size:77956 disposed:false
+96 silly fetch manifest dotenv@^16.5.0
+97 silly packumentCache full:https://registry.npmjs.org/dotenv cache-miss
+98 http cache https://registry.npmjs.org/dotenv 10ms (cache hit)
+99 silly packumentCache full:https://registry.npmjs.org/dotenv set size:274230 disposed:false
+100 silly fetch manifest drizzle-orm@^0.43.1
+101 silly packumentCache full:https://registry.npmjs.org/drizzle-orm cache-miss
+102 http cache https://registry.npmjs.org/drizzle-orm 208ms (cache hit)
+103 silly packumentCache full:https://registry.npmjs.org/drizzle-orm set size:93346780 disposed:false
+104 silly fetch manifest @aws-sdk/client-rds-data@>=3
+105 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-rds-data cache-miss
+106 http cache https://registry.npmjs.org/@aws-sdk%2fclient-rds-data 18ms (cache hit)
+107 silly packumentCache full:https://registry.npmjs.org/@aws-sdk%2fclient-rds-data set size:2702427 disposed:false
+108 silly fetch manifest @cloudflare/workers-types@>=4
+109 silly packumentCache full:https://registry.npmjs.org/@cloudflare%2fworkers-types cache-miss
+110 http cache https://registry.npmjs.org/@cloudflare%2fworkers-types 12ms (cache hit)
+111 silly packumentCache full:https://registry.npmjs.org/@cloudflare%2fworkers-types set size:1468745 disposed:false
+112 silly fetch manifest @electric-sql/pglite@>=0.2.0
+113 silly packumentCache full:https://registry.npmjs.org/@electric-sql%2fpglite cache-miss
+114 http cache https://registry.npmjs.org/@electric-sql%2fpglite 16ms (cache hit)
+115 silly packumentCache full:https://registry.npmjs.org/@electric-sql%2fpglite set size:303386 disposed:false
+116 silly fetch manifest @libsql/client@>=0.10.0
+117 silly packumentCache full:https://registry.npmjs.org/@libsql%2fclient cache-miss
+118 http cache https://registry.npmjs.org/@libsql%2fclient 9ms (cache hit)
+119 silly packumentCache full:https://registry.npmjs.org/@libsql%2fclient set size:377686 disposed:false
+120 silly fetch manifest @libsql/client-wasm@>=0.10.0
+121 silly packumentCache full:https://registry.npmjs.org/@libsql%2fclient-wasm cache-miss
+122 http cache https://registry.npmjs.org/@libsql%2fclient-wasm 8ms (cache hit)
+123 silly packumentCache full:https://registry.npmjs.org/@libsql%2fclient-wasm set size:139907 disposed:false
+124 silly fetch manifest @neondatabase/serverless@>=0.10.0
+125 silly packumentCache full:https://registry.npmjs.org/@neondatabase%2fserverless cache-miss
+126 http cache https://registry.npmjs.org/@neondatabase%2fserverless 8ms (cache hit)
+127 silly packumentCache full:https://registry.npmjs.org/@neondatabase%2fserverless set size:173277 disposed:false
+128 silly fetch manifest @op-engineering/op-sqlite@>=2
+129 silly packumentCache full:https://registry.npmjs.org/@op-engineering%2fop-sqlite cache-miss
+130 http cache https://registry.npmjs.org/@op-engineering%2fop-sqlite 8ms (cache hit)
+131 silly packumentCache full:https://registry.npmjs.org/@op-engineering%2fop-sqlite set size:473439 disposed:false
+132 silly fetch manifest @sqlite.org/sqlite-wasm@*
+133 silly packumentCache full:https://registry.npmjs.org/@sqlite.org%2fsqlite-wasm cache-miss
+134 http cache https://registry.npmjs.org/@sqlite.org%2fsqlite-wasm 9ms (cache hit)
+135 silly packumentCache full:https://registry.npmjs.org/@sqlite.org%2fsqlite-wasm set size:226567 disposed:false
+136 silly fetch manifest react@*
+137 silly packumentCache full:https://registry.npmjs.org/react cache-miss
+138 http cache https://registry.npmjs.org/react 23ms (cache hit)
+139 silly packumentCache full:https://registry.npmjs.org/react set size:6598084 disposed:false
+140 silly fetch manifest react-native@*
+141 silly packumentCache full:https://registry.npmjs.org/react-native cache-miss
+142 http cache https://registry.npmjs.org/react-native 42ms (cache hit)
+143 silly packumentCache full:https://registry.npmjs.org/react-native set size:15097435 disposed:false
+144 silly fetch manifest @react-native/jest-preset@0.85.0
+145 silly packumentCache full:https://registry.npmjs.org/@react-native%2fjest-preset cache-miss
+146 http cache https://registry.npmjs.org/@react-native%2fjest-preset 19ms (cache hit)
+147 silly packumentCache full:https://registry.npmjs.org/@react-native%2fjest-preset set size:104978 disposed:false
+148 silly fetch manifest @types/react@^19.1.1
+149 silly packumentCache full:https://registry.npmjs.org/@types%2freact cache-miss
+150 http cache https://registry.npmjs.org/@types%2freact 14ms (cache hit)
+151 silly packumentCache full:https://registry.npmjs.org/@types%2freact set size:2588964 disposed:false
+152 silly fetch manifest @opentelemetry/api@^1.4.1
+153 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fapi cache-miss
+154 http cache https://registry.npmjs.org/@opentelemetry%2fapi 8ms (cache hit)
+155 silly packumentCache full:https://registry.npmjs.org/@opentelemetry%2fapi set size:272855 disposed:false
+156 silly fetch manifest @planetscale/database@>=1.13
+157 silly packumentCache full:https://registry.npmjs.org/@planetscale%2fdatabase cache-miss
+158 http cache https://registry.npmjs.org/@planetscale%2fdatabase 8ms (cache hit)
+159 silly packumentCache full:https://registry.npmjs.org/@planetscale%2fdatabase set size:131439 disposed:false
+160 silly fetch manifest @prisma/client@*
+161 silly packumentCache full:https://registry.npmjs.org/@prisma%2fclient cache-miss
+162 http cache https://registry.npmjs.org/@prisma%2fclient 155ms (cache hit)
+163 silly packumentCache full:https://registry.npmjs.org/@prisma%2fclient set size:67666701 disposed:false
+164 silly fetch manifest prisma@*
+165 silly packumentCache full:https://registry.npmjs.org/prisma cache-miss
