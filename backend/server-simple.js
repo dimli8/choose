@@ -25,6 +25,7 @@ const courses = [
     description: '高等数学是大学数学的基础课程，主要包括微积分、线性代数、概率论等内容。',
     teacher: '张教授',
     department: '数学与统计学院',
+    type: '专选课',
     rating: 4.2,
     reviewCount: 256
   },
@@ -34,6 +35,7 @@ const courses = [
     description: '大学英语课程旨在提高学生的英语听说读写能力，为后续专业学习和国际交流打下基础。',
     teacher: '李老师',
     department: '外国语学院',
+    type: '专选课',
     rating: 4.0,
     reviewCount: 189
   },
@@ -43,6 +45,7 @@ const courses = [
     description: '体育选修课程包括篮球、足球、羽毛球、游泳等多种运动项目，学生可以根据自己的兴趣选择。',
     teacher: '王教练',
     department: '体育学院',
+    type: '体育课',
     rating: 4.5,
     reviewCount: 123
   },
@@ -52,6 +55,7 @@ const courses = [
     description: '管理学原理课程介绍管理学的基本概念、理论和方法，培养学生的管理思维和能力。',
     teacher: '刘教授',
     department: '管理学院',
+    type: '专选课',
     rating: 4.3,
     reviewCount: 98
   }
@@ -101,8 +105,51 @@ const generateToken = (userId) => {
 
 // API Routes
 app.get('/api/courses', (req, res) => {
+  const { college, type, search, sortBy } = req.query;
+  
+  // Filter courses based on parameters
+  let filteredCourses = [...courses];
+  
+  // Filter by college
+  if (college) {
+    filteredCourses = filteredCourses.filter(c => c.department === college);
+  }
+  
+  // Filter by type
+  if (type) {
+    filteredCourses = filteredCourses.filter(c => c.type === type || (c.type === undefined && type === '通识课'));
+  }
+  
+  // Filter by search
+  if (search) {
+    const searchLower = search.toLowerCase();
+    filteredCourses = filteredCourses.filter(c => 
+      c.title.toLowerCase().includes(searchLower) ||
+      c.teacher.toLowerCase().includes(searchLower) ||
+      (c.code && c.code.toLowerCase().includes(searchLower))
+    );
+  }
+  
+  // Sort courses
+  if (sortBy) {
+    switch (sortBy) {
+      case 'grading':
+        filteredCourses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        break;
+      case 'reviews':
+        filteredCourses.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+        break;
+      default:
+        // Default sort by rating
+        filteredCourses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    }
+  } else {
+    // Default sort by rating
+    filteredCourses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+  }
+  
   // Transform courses to match frontend expected format
-  const transformedCourses = courses.map(c => ({
+  const transformedCourses = filteredCourses.map(c => ({
     id: c.id,
     name: c.title,
     code: c.code || `COURSE${c.id}`,
@@ -121,6 +168,7 @@ app.get('/api/courses', (req, res) => {
     createdAt: c.createdAt || new Date().toISOString(),
     updatedAt: c.updatedAt || new Date().toISOString(),
   }));
+  
   res.json({ success: true, data: transformedCourses });
 });
 
