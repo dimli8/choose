@@ -21,21 +21,39 @@ app.use(express.static(path.join(__dirname, '../frontend/dist')));
 const courses = [
   {
     id: '1',
-    title: 'Introduction to Computer Science',
-    description: 'Learn the basics of computer science',
-    teacher: 'Dr. Smith',
-    department: 'Computer Science',
-    rating: 4.5,
-    reviewCount: 120
+    title: '高等数学',
+    description: '高等数学是大学数学的基础课程，主要包括微积分、线性代数、概率论等内容。',
+    teacher: '张教授',
+    department: '数学与统计学院',
+    rating: 4.2,
+    reviewCount: 256
   },
   {
     id: '2',
-    title: 'Data Structures and Algorithms',
-    description: 'Learn about data structures and algorithms',
-    teacher: 'Prof. Johnson',
-    department: 'Computer Science',
-    rating: 4.8,
-    reviewCount: 95
+    title: '大学英语',
+    description: '大学英语课程旨在提高学生的英语听说读写能力，为后续专业学习和国际交流打下基础。',
+    teacher: '李老师',
+    department: '外国语学院',
+    rating: 4.0,
+    reviewCount: 189
+  },
+  {
+    id: '3',
+    title: '体育选修',
+    description: '体育选修课程包括篮球、足球、羽毛球、游泳等多种运动项目，学生可以根据自己的兴趣选择。',
+    teacher: '王教练',
+    department: '体育学院',
+    rating: 4.5,
+    reviewCount: 123
+  },
+  {
+    id: '4',
+    title: '管理学原理',
+    description: '管理学原理课程介绍管理学的基本概念、理论和方法，培养学生的管理思维和能力。',
+    teacher: '刘教授',
+    department: '管理学院',
+    rating: 4.3,
+    reviewCount: 98
   }
 ];
 
@@ -83,32 +101,193 @@ const generateToken = (userId) => {
 
 // API Routes
 app.get('/api/courses', (req, res) => {
-  res.json(courses);
+  // Transform courses to match frontend expected format
+  const transformedCourses = courses.map(c => ({
+    id: c.id,
+    name: c.title,
+    code: c.code || `COURSE${c.id}`,
+    college: c.department,
+    type: c.type || '通识课',
+    teacherId: c.teacherId || null,
+    description: c.description || '',
+    imageUrl: c.imageUrl || null,
+    credits: c.credits || 3,
+    avgRating: c.rating || 0,
+    avgGrading: c.avgGrading || 0,
+    avgWorkload: c.avgWorkload || 0,
+    avgRecommend: c.avgRecommend || 0,
+    reviewCount: c.reviewCount || 0,
+    teacher: c.teacher || null,
+    createdAt: c.createdAt || new Date().toISOString(),
+    updatedAt: c.updatedAt || new Date().toISOString(),
+  }));
+  res.json({ success: true, data: transformedCourses });
+});
+
+app.get('/api/courses/colleges', (req, res) => {
+  // Extract unique colleges from courses
+  const colleges = [...new Set(courses.map(c => c.department))];
+  res.json({ success: true, data: colleges });
 });
 
 app.get('/api/courses/:id', (req, res) => {
   const course = courses.find(c => c.id === req.params.id);
   if (course) {
-    res.json(course);
+    const transformedCourse = {
+      id: course.id,
+      name: course.title,
+      code: course.code || `COURSE${course.id}`,
+      college: course.department,
+      type: course.type || '通识课',
+      teacherId: course.teacherId || null,
+      description: course.description || '',
+      imageUrl: course.imageUrl || null,
+      credits: course.credits || 3,
+      avgRating: course.rating || 0,
+      avgGrading: course.avgGrading || 0,
+      avgWorkload: course.avgWorkload || 0,
+      avgRecommend: course.avgRecommend || 0,
+      reviewCount: course.reviewCount || 0,
+      teacher: course.teacher || null,
+      createdAt: course.createdAt || new Date().toISOString(),
+      updatedAt: course.updatedAt || new Date().toISOString(),
+    };
+    res.json({ success: true, data: transformedCourse });
   } else {
-    res.status(404).json({ error: 'Course not found' });
+    res.status(404).json({ success: false, message: 'Course not found' });
   }
 });
 
 app.get('/api/courses/:id/reviews', (req, res) => {
   const courseReviews = reviews.filter(r => r.courseId === req.params.id);
-  res.json(courseReviews);
+  const transformedReviews = courseReviews.map(r => ({
+    id: r.id,
+    courseId: r.courseId,
+    userId: r.userId,
+    isAnonymous: r.isAnonymous || false,
+    content: r.content,
+    rating: r.rating,
+    grading: r.grading || 3,
+    workload: r.workload || 2,
+    recommend: r.recommend || 3,
+    status: r.status || 'approved',
+    likeCount: r.likeCount || 0,
+    userName: r.userName || '匿名用户',
+    courseName: r.courseName || '',
+    courseCode: r.courseCode || '',
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt || r.createdAt,
+  }));
+  res.json({ success: true, data: transformedReviews });
+});
+
+app.get('/api/reviews/course/:id', (req, res) => {
+  const courseReviews = reviews.filter(r => r.courseId === req.params.id);
+  const transformedReviews = courseReviews.map(r => ({
+    id: r.id,
+    courseId: r.courseId,
+    userId: r.userId,
+    isAnonymous: r.isAnonymous || false,
+    content: r.content,
+    rating: r.rating,
+    grading: r.grading || 3,
+    workload: r.workload || 2,
+    recommend: r.recommend || 3,
+    status: r.status || 'approved',
+    likeCount: r.likeCount || 0,
+    userName: r.userName || '匿名用户',
+    courseName: r.courseName || '',
+    courseCode: r.courseCode || '',
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt || r.createdAt,
+  }));
+  res.json({ success: true, data: transformedReviews });
+});
+
+app.get('/api/reviews', (req, res) => {
+  const transformedReviews = reviews.map(r => ({
+    id: r.id,
+    courseId: r.courseId,
+    userId: r.userId,
+    isAnonymous: r.isAnonymous || false,
+    content: r.content,
+    rating: r.rating,
+    grading: r.grading || 3,
+    workload: r.workload || 2,
+    recommend: r.recommend || 3,
+    status: r.status || 'approved',
+    likeCount: r.likeCount || 0,
+    userName: r.userName || '匿名用户',
+    courseName: r.courseName || '',
+    courseCode: r.courseCode || '',
+    createdAt: r.createdAt,
+    updatedAt: r.updatedAt || r.createdAt,
+  }));
+  res.json({ success: true, data: transformedReviews });
+});
+
+app.get('/api/reviews/likes/me', (req, res) => {
+  // Return empty array for now
+  res.json({ success: true, data: [] });
 });
 
 app.post('/api/reviews', (req, res) => {
   const newReview = {
     id: (reviews.length + 1).toString(),
-    ...req.body,
-    createdAt: new Date().toISOString()
+    courseId: req.body.courseId,
+    userId: '1', // Assume user ID 1 for now
+    isAnonymous: req.body.isAnonymous || false,
+    content: req.body.content,
+    rating: req.body.rating,
+    grading: req.body.grading || 3,
+    workload: req.body.workload || 2,
+    recommend: req.body.recommend || 3,
+    status: 'approved',
+    likeCount: 0,
+    createdAt: new Date().toISOString(),
   };
   reviews.push(newReview);
-  res.status(201).json(newReview);
+  res.json({ success: true, data: newReview });
 });
+
+app.post('/api/reviews/:id/like', (req, res) => {
+  // Find the review
+  const review = reviews.find(r => r.id === req.params.id);
+  if (review) {
+    // Increment like count
+    review.likeCount += 1;
+    res.json({ success: true, data: { liked: true } });
+  } else {
+    res.status(404).json({ success: false, message: 'Review not found' });
+  }
+});
+
+app.get('/api/reviews/:id/comments', (req, res) => {
+  // Return empty array for now
+  res.json({ success: true, data: [] });
+});
+
+app.post('/api/reviews/:id/comments', (req, res) => {
+  const newComment = {
+    id: '1',
+    content: req.body.content,
+    userName: '匿名用户',
+    createdAt: new Date().toISOString(),
+  };
+  res.json({ success: true, data: newComment });
+});
+
+app.post('/api/reviews/:id/report', (req, res) => {
+  const newReport = {
+    id: '1',
+    reviewId: req.params.id,
+    reason: req.body.reason,
+    createdAt: new Date().toISOString(),
+  };
+  res.json({ success: true, data: newReport });
+});
+
+
 
 // Auth routes
 app.post('/api/auth/login', (req, res) => {

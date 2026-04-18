@@ -907,7 +907,7 @@ const WriteReviewView = ({
 }: {
   courses: Course[];
   preselectedCourseId?: string;
-  onSuccess: () => void;
+  onSuccess: (review: Review) => void;
 }) => {
   const [courseId, setCourseId] = useState(preselectedCourseId || '');
   const [content, setContent] = useState('');
@@ -928,8 +928,8 @@ const WriteReviewView = ({
     try {
       const res = await reviewsApi.create({ courseId, content, rating, grading, workload, recommend, isAnonymous });
       if (res.success) {
-        toast.success('评价已提交', { description: '审核通过后将公开显示' });
-        onSuccess();
+        toast.success('评价已提交', { description: '感谢你的分享！' });
+        onSuccess(res.data);
       } else {
         toast.error('提交失败', { description: res.message });
       }
@@ -1608,7 +1608,20 @@ const Index = () => {
           <WriteReviewView
             courses={allCourses}
             preselectedCourseId={selectedCourseId || undefined}
-            onSuccess={() => handleNavigate('reviews')}
+            onSuccess={(review) => {
+              // Add the new review to allReviews list
+              setAllReviews(prev => [review, ...prev]);
+              
+              if (selectedCourseId) {
+                // Add the new review to courseReviews list
+                setCourseReviews(prev => [review, ...prev]);
+                // Return to course detail page
+                setCurrentView('course-detail');
+              } else {
+                // Navigate to reviews page if no course selected
+                handleNavigate('reviews');
+              }
+            }}
           />
         )}
 
