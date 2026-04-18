@@ -265,64 +265,71 @@ const ReviewCard = ({
   review: Review;
   likedIds: string[];
   onLike: (id: string) => void;
-  onComment: (review: Review) => void;
-  onReport: (review: Review) => void;
+  onComment: (r: Review) => void;
+  onReport: (r: Review) => void;
   showCourse?: boolean;
 }) => {
   const isLiked = likedIds.includes(review.id);
+  const [isAnonymous, setIsAnonymous] = useState(review.isAnonymous);
+
   return (
-    <div className="bg-white rounded-2xl border border-[#dde3ec] p-6 shadow-[0_4px_12px_-1px_rgb(30_58_95/0.06)] hover:shadow-[0_10px_24px_-3px_rgb(30_58_95/0.1)] transition-all duration-300">
+    <article className="bg-white rounded-2xl border border-[#dde3ec] p-6 shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)]">
       <div className="flex items-start gap-4">
-        <div className="w-10 h-10 bg-[#1e3a5f] rounded-full flex items-center justify-center flex-shrink-0">
-          <span className="text-white text-sm font-bold">匿</span>
+        <div className="flex-shrink-0">
+          <div className="w-10 h-10 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-medium">
+            {isAnonymous ? '匿' : review.userName?.[0] || '?'}
+          </div>
         </div>
         <div className="flex-1 min-w-0">
-          <div className="flex items-center justify-between flex-wrap gap-2 mb-2">
-            <div className="flex items-center gap-3 flex-wrap">
-              <span className="text-sm font-semibold text-[#0f1f35]">
-                {review.isAnonymous ? '匿名用户' : (review.userName || '用户')}
+          <div className="flex flex-wrap items-center gap-3 mb-2">
+            {showCourse && review.courseName && (
+              <span className="text-xs font-medium text-[#2d6a9f] bg-[#f5f7fa] px-2.5 py-1 rounded-full">
+                {review.courseName}
               </span>
-              {showCourse && review.courseName && (
-                <span className="text-xs text-[#5a7184] bg-[#f5f7fa] px-2 py-0.5 rounded-full">
-                  {review.courseName}
-                </span>
-              )}
-            </div>
+            )}
+            <span className="text-xs text-[#5a7184]">
+              {isAnonymous ? '匿名用户' : review.userName || '未知用户'}
+            </span>
+            <span className="text-xs text-[#5a7184]">{formatDate(review.createdAt)}</span>
             <div className="flex items-center gap-1">
-              <Star className="w-4 h-4 text-[#f59e0b] fill-[#f59e0b]" />
-              <span className="text-sm font-bold text-[#0f1f35]">{review.rating}.0</span>
+              <Star className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />
+              <span className="text-xs font-bold text-[#0f1f35]">{review.rating}.0</span>
             </div>
           </div>
-
-          <div className="flex gap-4 mb-3">
-            <div className="text-xs text-[#5a7184]">给分: <span className="text-[#0f1f35] font-medium">{['很差', '较差', '一般', '良好', '极好'][review.grading - 1]}</span></div>
-            <div className="text-xs text-[#5a7184]">作业: <span className="text-[#0f1f35] font-medium">{['很少', '适中', '较多', '很多'][review.workload - 1]}</span></div>
-            <div className="text-xs text-[#5a7184]">推荐: <span className="text-[#0f1f35] font-medium">{['强烈不推荐', '不推荐', '一般', '推荐', '强烈推荐'][review.recommend - 1]}</span></div>
+          <p className="text-sm text-[#0f1f35] leading-relaxed mb-4">{review.content}</p>
+          <div className="flex flex-wrap gap-2 mb-4">
+            <span className="text-xs px-2 py-1 rounded-full bg-[#f5f7fa] text-[#5a7184]">
+              给分: {['很差', '较差', '一般', '良好', '极好'][review.grading - 1]}
+            </span>
+            <span className="text-xs px-2 py-1 rounded-full bg-[#f5f7fa] text-[#5a7184]">
+              作业: {['很少', '适中', '较多', '很多'][review.workload - 1]}
+            </span>
+            <span className="text-xs px-2 py-1 rounded-full bg-[#f5f7fa] text-[#5a7184]">
+              推荐: {['强烈不推荐', '不推荐', '一般', '推荐', '强烈推荐'][review.recommend - 1]}
+            </span>
           </div>
-
-          <p className="text-sm text-[#0f1f35] leading-relaxed">{review.content}</p>
-
-          <div className="flex items-center gap-4 mt-3">
+          <div className="flex items-center gap-4">
             <button
               onClick={() => onLike(review.id)}
-              className={`flex items-center gap-1.5 text-xs transition-colors ${
-                isLiked ? 'text-[#1e3a5f] font-semibold' : 'text-[#5a7184] hover:text-[#1e3a5f]'
+              className={`flex items-center gap-1.5 text-sm font-medium transition-colors ${
+                isLiked
+                  ? 'text-[#2d6a9f]'
+                  : 'text-[#5a7184] hover:text-[#1e3a5f]'
               }`}
             >
-              <ThumbsUp className={`w-4 h-4 ${isLiked ? 'fill-[#1e3a5f]' : ''}`} />
+              <ThumbsUp className="w-4 h-4" />
               有用 ({review.likeCount})
             </button>
             <button
               onClick={() => onComment(review)}
-              className="flex items-center gap-1.5 text-xs text-[#5a7184] hover:text-[#1e3a5f] transition-colors"
+              className="flex items-center gap-1.5 text-sm font-medium text-[#5a7184] hover:text-[#1e3a5f] transition-colors"
             >
               <MessageCircle className="w-4 h-4" />
               评论
             </button>
-            <span className="text-xs text-[#5a7184] ml-auto">{formatDate(review.createdAt)}</span>
             <button
               onClick={() => onReport(review)}
-              className="flex items-center gap-1.5 text-xs text-[#5a7184] hover:text-[#dc2626] transition-colors"
+              className="flex items-center gap-1.5 text-sm font-medium text-[#5a7184] hover:text-[#dc2626] transition-colors"
             >
               <Flag className="w-4 h-4" />
               举报
@@ -330,9 +337,89 @@ const ReviewCard = ({
           </div>
         </div>
       </div>
-    </div>
+    </article>
   );
 };
+
+// ============================================
+// Filter Panel
+// ============================================
+const FilterPanel = ({
+  filters,
+  setFilters,
+  colleges,
+  onApply,
+  onReset,
+}: {
+  filters: CourseFilters;
+  setFilters: (f: CourseFilters) => void;
+  colleges: string[];
+  onApply: () => void;
+  onReset: () => void;
+}) => (
+  <div className="bg-white rounded-2xl border border-[#dde3ec] p-5 shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)]">
+    <h3 className="font-serif text-lg font-bold text-[#1e3a5f] mb-5">筛选课程</h3>
+
+    <div className="space-y-6">
+      <div>
+        <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">所属学院</label>
+        <select
+          value={filters.college}
+          onChange={(e) => setFilters({ ...filters, college: e.target.value })}
+          className="w-full text-sm text-[#0f1f35] bg-[#f5f7fa] border border-[#dde3ec] rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
+        >
+          <option value="">全部学院</option>
+          {colleges.map((c) => (
+            <option key={c} value={c}>{c}</option>
+          ))}
+        </select>
+      </div>
+
+      <div>
+        <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">课程类型</label>
+        <div className="space-y-2">
+          {['通识课', '专选课', '体育课'].map((t) => (
+            <label key={t} className="flex items-center gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={filters.type === t || filters.type === ''}
+                onChange={(e) => setFilters({ ...filters, type: e.target.checked ? t : '' })}
+                className="accent-[#1e3a5f]"
+              />
+              <span className="text-sm text-[#0f1f35]">{t}</span>
+            </label>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">排序方式</label>
+        <select
+          value={filters.sortBy}
+          onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
+          className="w-full text-sm text-[#0f1f35] bg-[#f5f7fa] border border-[#dde3ec] rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
+        >
+          <option value="">综合评分</option>
+          <option value="grading">给分最高</option>
+          <option value="reviews">评价最多</option>
+        </select>
+      </div>
+
+      <button
+        onClick={onApply}
+        className="w-full bg-[#1e3a5f] text-white py-3 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors duration-200"
+      >
+        应用筛选
+      </button>
+      <button
+        onClick={onReset}
+        className="w-full text-[#5a7184] py-2 text-sm hover:text-[#1e3a5f] transition-colors duration-200"
+      >
+        重置筛选
+      </button>
+    </div>
+  </div>
+);
 
 // ============================================
 // Home View
@@ -356,56 +443,41 @@ const HomeView = ({
   onComment: (r: Review) => void;
   onReport: (r: Review) => void;
 }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (searchQuery.trim()) {
-      onNavigate('courses');
-    }
-  };
-
   const hotSearches = ['高等数学', '大学英语', '体育选修', '管理学原理'];
 
   return (
     <div>
-      {/* Hero */}
-      <section className="relative overflow-hidden bg-[#1e3a5f] py-20 lg:py-28">
-        <div className="absolute inset-0 opacity-10">
-          <div className="absolute top-0 right-0 w-96 h-96 bg-[#f59e0b] rounded-full blur-3xl translate-x-1/2 -translate-y-1/2" />
-          <div className="absolute bottom-0 left-0 w-80 h-80 bg-[#2d6a9f] rounded-full blur-3xl -translate-x-1/2 translate-y-1/2" />
-        </div>
-        <div className="relative max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="inline-flex items-center gap-2 bg-white/10 border border-white/20 rounded-full px-4 py-1.5 mb-6">
-              <span className="w-2 h-2 bg-[#f59e0b] rounded-full animate-pulse" />
-              <span className="text-white/80 text-xs font-medium tracking-wide uppercase">全校课程真实评价平台</span>
-            </div>
-            <h1 className="font-serif text-4xl lg:text-6xl font-bold text-white leading-tight mb-6">
-              选课前，先看<span className="text-[#f59e0b]">真实评价</span>
+      {/* Hero Section */}
+      <section className="bg-gradient-to-r from-[#1e3a5f] to-[#2d6a9f] text-white">
+        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+          <div className="max-w-2xl">
+            <h1 className="font-serif text-4xl sm:text-5xl font-bold mb-4 leading-tight">
+              真实的选课体验，<br />让每门课都值得选择
             </h1>
-            <p className="text-white/70 text-lg lg:text-xl leading-relaxed mb-10 max-w-2xl mx-auto">
-              汇聚全校同学的选课经验，了解给分情况、作业量、课堂氛围，帮你做出最明智的选课决策。
+            <p className="text-white/80 text-lg mb-8 leading-relaxed">
+              查看学长学姐的真实评价，了解课程难度、给分情况和作业量，做出更明智的选课决策。
             </p>
-            <form onSubmit={handleSearch} className="bg-white rounded-2xl p-2 shadow-[0_20px_40px_rgb(0_0_0/0.2)] max-w-2xl mx-auto">
-              <div className="flex gap-2">
-                <div className="flex-1 relative">
-                  <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5a7184]" />
-                  <input
-                    type="search"
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="搜索课程名称、教师姓名或课程代码…"
-                    className="w-full pl-12 pr-4 py-3.5 text-[#0f1f35] text-sm rounded-xl border-0 outline-none placeholder:text-[#5a7184] bg-[#f5f7fa] focus:ring-2 focus:ring-[#2d6a9f]/30"
-                  />
-                </div>
-                <button
-                  type="submit"
-                  className="bg-[#1e3a5f] text-white px-6 py-3.5 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors duration-200 whitespace-nowrap"
-                >
-                  搜索课程
-                </button>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                onNavigate('courses');
+              }}
+              className="flex gap-3"
+            >
+              <div className="relative flex-1">
+                <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-[#5a7184]" />
+                <input
+                  type="search"
+                  placeholder="搜索课程名称、教师姓名或课程代码…"
+                  className="w-full pl-12 pr-4 py-3.5 bg-white/10 backdrop-blur-sm border border-white/20 rounded-xl text-white placeholder-white/60 outline-none focus:ring-2 focus:ring-white/30 focus:border-white"
+                />
               </div>
+              <button
+                type="submit"
+                className="bg-white text-[#1e3a5f] px-6 py-3.5 rounded-xl text-sm font-semibold hover:bg-[#f59e0b] transition-colors duration-200 whitespace-nowrap"
+              >
+                搜索课程
+              </button>
             </form>
             <div className="flex flex-wrap justify-center gap-3 mt-8">
               <span className="text-white/50 text-sm">热门搜索：</span>
@@ -447,10 +519,7 @@ const HomeView = ({
       {/* Featured Courses */}
       <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center justify-between mb-6">
-          <div>
-            <h2 className="font-serif text-2xl font-bold text-[#0f1f35]">热门课程</h2>
-            <p className="text-sm text-[#5a7184] mt-1">根据综合评分排序</p>
-          </div>
+          <h2 className="font-serif text-2xl font-bold text-[#1e3a5f]">热门课程</h2>
           <button
             onClick={() => onNavigate('courses')}
             className="text-sm font-semibold text-[#2d6a9f] hover:text-[#1e3a5f] transition-colors flex items-center gap-1"
@@ -482,9 +551,9 @@ const HomeView = ({
       </section>
 
       {/* Recent Reviews */}
-      <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 pb-12">
+      <section className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="font-serif text-2xl font-bold text-[#0f1f35]">最新评价动态</h2>
+          <h2 className="font-serif text-2xl font-bold text-[#1e3a5f]">最新评价</h2>
           <button
             onClick={() => onNavigate('reviews')}
             className="text-sm font-semibold text-[#2d6a9f] hover:text-[#1e3a5f] transition-colors flex items-center gap-1"
@@ -504,130 +573,8 @@ const HomeView = ({
               showCourse
             />
           ))}
-          {recentReviews.length === 0 && (
-            <div className="text-center py-12 text-[#5a7184]">
-              <Star className="w-12 h-12 mx-auto mb-3 opacity-30" />
-              <p>暂无评价，成为第一个分享的同学吧！</p>
-            </div>
-          )}
         </div>
       </section>
-
-      {/* Footer */}
-      <footer className="bg-[#1e3a5f] text-white py-12">
-        <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-10">
-            <div className="md:col-span-2">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-8 h-8 bg-[#f59e0b] rounded-lg flex items-center justify-center">
-                  <BookOpen className="w-5 h-5 text-[#1e3a5f]" />
-                </div>
-                <span className="font-serif text-xl font-bold">选课点评</span>
-              </div>
-              <p className="text-white/60 text-sm leading-relaxed max-w-sm">
-                汇聚全校同学的真实选课经验，帮助每一位学生做出更明智的选课决策。
-              </p>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-white/50 mb-4">快速导航</h4>
-              <ul className="space-y-2">
-                {['浏览课程', '热门评价', '写评价'].map((item) => (
-                  <li key={item}><button className="text-sm text-white/70 hover:text-white transition-colors">{item}</button></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <h4 className="text-sm font-semibold uppercase tracking-wide text-white/50 mb-4">帮助支持</h4>
-              <ul className="space-y-2">
-                {['使用指南', '隐私政策', '举报问题', '联系我们'].map((item) => (
-                  <li key={item}><button className="text-sm text-white/70 hover:text-white transition-colors">{item}</button></li>
-                ))}
-              </ul>
-            </div>
-          </div>
-          <div className="border-t border-white/10 pt-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-            <p className="text-white/40 text-xs">© 2026 选课点评平台. 保留所有权利.</p>
-            <p className="text-white/40 text-xs">为同学服务，由同学共建</p>
-          </div>
-        </div>
-      </footer>
-    </div>
-  );
-};
-
-// ============================================
-// Filter Panel (standalone, outside CoursesView)
-// ============================================
-const FilterPanel = ({
-  filters,
-  setFilters,
-  colleges,
-  onApply,
-  onReset,
-}: {
-  filters: CourseFilters;
-  setFilters: (f: CourseFilters) => void;
-  colleges: string[];
-  onApply: () => void;
-  onReset: () => void;
-}) => {
-  const courseTypes = ['通识课', '专选课', '体育课'];
-  return (
-    <div className="bg-white rounded-2xl border border-[#dde3ec] p-6 shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)]">
-      <h2 className="font-serif text-lg font-bold text-[#0f1f35] mb-5">筛选课程</h2>
-      <div className="space-y-6">
-        <div>
-          <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">所属学院</label>
-          <select
-            value={filters.college}
-            onChange={(e) => setFilters({ ...filters, college: e.target.value })}
-            className="w-full text-sm text-[#0f1f35] bg-[#f5f7fa] border border-[#dde3ec] rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
-          >
-            <option value="">全部学院</option>
-            {colleges.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-3">课程类型</label>
-          <div className="space-y-2">
-            {courseTypes.map((t) => (
-              <label key={t} className="flex items-center gap-3 cursor-pointer group">
-                <input
-                  type="checkbox"
-                  checked={filters.type === t}
-                  onChange={(e) => setFilters({ ...filters, type: e.target.checked ? t : '' })}
-                  className="w-4 h-4 rounded border-[#dde3ec] accent-[#1e3a5f]"
-                />
-                <span className="text-sm text-[#0f1f35] group-hover:text-[#1e3a5f] transition-colors">{t}</span>
-              </label>
-            ))}
-          </div>
-        </div>
-        <div>
-          <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">排序方式</label>
-          <select
-            value={filters.sortBy}
-            onChange={(e) => setFilters({ ...filters, sortBy: e.target.value })}
-            className="w-full text-sm text-[#0f1f35] bg-[#f5f7fa] border border-[#dde3ec] rounded-lg px-3 py-2.5 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
-          >
-            <option value="">综合评分</option>
-            <option value="grading">给分最高</option>
-            <option value="reviews">评价最多</option>
-          </select>
-        </div>
-        <button
-          onClick={onApply}
-          className="w-full bg-[#1e3a5f] text-white py-3 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors duration-200"
-        >
-          应用筛选
-        </button>
-        <button
-          onClick={onReset}
-          className="w-full text-[#5a7184] py-2 text-sm hover:text-[#1e3a5f] transition-colors duration-200"
-        >
-          重置筛选
-        </button>
-      </div>
     </div>
   );
 };
@@ -759,99 +706,123 @@ const CourseDetailView = ({
   onComment: (r: Review) => void;
   onReport: (r: Review) => void;
   onWriteReview: () => void;
-}) => (
-  <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-    <button
-      onClick={onBack}
-      className="flex items-center gap-2 text-sm text-[#5a7184] hover:text-[#1e3a5f] transition-colors mb-6"
-    >
-      <ArrowLeft className="w-4 h-4" />返回课程列表
-    </button>
-
-    {/* Course Header */}
-    <div className="bg-white rounded-2xl border border-[#dde3ec] overflow-hidden shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)] mb-8">
-      <div className="relative h-56 md:h-72 overflow-hidden">
-        <img
-          src={course.imageUrl || 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=1080&q=80'}
-          alt={course.name}
-          className="w-full h-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#1e3a5f]/90 to-transparent" />
-        <div className="absolute bottom-6 left-6 right-6">
-          <CourseTypeBadge type={course.type} />
-          <h1 className="font-serif text-3xl font-bold text-white mt-2 mb-1">{course.name}</h1>
-          <p className="text-white/70">{course.college} · {course.code} · {course.credits}学分</p>
-        </div>
-      </div>
-      <div className="p-6">
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-          {[
-            { label: '综合评分', value: Number(course.avgRating).toFixed(1), suffix: '/5.0' },
-            { label: '给分情况', value: Number(course.avgGrading).toFixed(1), suffix: '/5.0' },
-            { label: '作业量', value: Number(course.avgWorkload).toFixed(1), suffix: '/4.0' },
-            { label: '推荐指数', value: Number(course.avgRecommend).toFixed(1), suffix: '/5.0' },
-          ].map(({ label, value, suffix }) => (
-            <div key={label} className="bg-[#f5f7fa] rounded-xl p-4 text-center">
-              <div className="text-2xl font-serif font-bold text-[#1e3a5f]">{value}<span className="text-sm text-[#5a7184] font-normal">{suffix}</span></div>
-              <div className="text-xs text-[#5a7184] mt-1">{label}</div>
-            </div>
-          ))}
-        </div>
-        {course.description && (
-          <p className="text-sm text-[#5a7184] leading-relaxed mb-4">{course.description}</p>
-        )}
-        {course.teacher && (
-          <div className="flex items-center gap-3 p-4 bg-[#f5f7fa] rounded-xl">
-            {course.teacher.avatarUrl && (
-              <img src={course.teacher.avatarUrl} alt={course.teacher.name} className="w-12 h-12 rounded-full object-cover border-2 border-[#dde3ec]" />
-            )}
-            <div>
-              <div className="font-semibold text-[#0f1f35]">{course.teacher.name}</div>
-              <div className="text-sm text-[#5a7184]">{course.teacher.college} · {course.teacher.title || '教师'}</div>
-            </div>
-          </div>
-        )}
-      </div>
-    </div>
-
-    {/* Reviews Section */}
-    <div className="flex items-center justify-between mb-6">
-      <h2 className="font-serif text-2xl font-bold text-[#0f1f35]">学生评价 ({reviews.length})</h2>
+}) => {
+  // Calculate course ratings based on reviews
+  let avgRating = Number(course.avgRating);
+  let avgGrading = Number(course.avgGrading);
+  let avgWorkload = Number(course.avgWorkload);
+  let avgRecommend = Number(course.avgRecommend);
+  
+  if (reviews.length > 0) {
+    // Use all reviews, even if they don't have all required fields
+    // For missing fields, use default values
+    const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+    const totalGrading = reviews.reduce((sum, review) => sum + (review.grading || 0), 0);
+    const totalWorkload = reviews.reduce((sum, review) => sum + (review.workload || 0), 0);
+    const totalRecommend = reviews.reduce((sum, review) => sum + (review.recommend || 0), 0);
+    
+    avgRating = totalRating / reviews.length;
+    avgGrading = totalGrading / reviews.length;
+    avgWorkload = totalWorkload / reviews.length;
+    avgRecommend = totalRecommend / reviews.length;
+  }
+  
+  return (
+    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <button
-        onClick={onWriteReview}
-        className="bg-[#1e3a5f] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors"
+        onClick={onBack}
+        className="flex items-center gap-2 text-sm text-[#5a7184] hover:text-[#1e3a5f] transition-colors mb-6"
       >
-        写评价
+        <ArrowLeft className="w-4 h-4" />返回课程列表
       </button>
-    </div>
 
-    {reviews.length === 0 ? (
-      <div className="text-center py-16 bg-white rounded-2xl border border-[#dde3ec]">
-        <Star className="w-12 h-12 mx-auto mb-3 text-[#dde3ec]" />
-        <p className="text-[#5a7184]">暂无评价，成为第一个分享的同学吧！</p>
+      {/* Course Header */}
+      <div className="bg-white rounded-2xl border border-[#dde3ec] overflow-hidden shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)] mb-8">
+        <div className="relative h-56 md:h-72 overflow-hidden">
+          <img
+            src={course.imageUrl || 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=1080&q=80'}
+            alt={course.name}
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-[#1e3a5f]/90 to-transparent" />
+          <div className="absolute bottom-6 left-6 right-6">
+            <CourseTypeBadge type={course.type} />
+            <h1 className="font-serif text-3xl font-bold text-white mt-2 mb-1">{course.name}</h1>
+            <p className="text-white/70">{course.college} · {course.code} · {course.credits}学分</p>
+          </div>
+        </div>
+        <div className="p-6">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+            {
+              [
+                { label: '综合评分', value: avgRating.toFixed(1), suffix: '/5.0' },
+                { label: '给分情况', value: avgGrading.toFixed(1), suffix: '/5.0' },
+                { label: '作业量', value: avgWorkload.toFixed(1), suffix: '/4.0' },
+                { label: '推荐指数', value: avgRecommend.toFixed(1), suffix: '/5.0' },
+              ].map(({ label, value, suffix }) => (
+                <div key={label} className="bg-[#f5f7fa] rounded-xl p-4 text-center">
+                  <div className="text-2xl font-serif font-bold text-[#1e3a5f]">{value}<span className="text-sm text-[#5a7184] font-normal">{suffix}</span></div>
+                  <div className="text-xs text-[#5a7184] mt-1">{label}</div>
+                </div>
+              ))
+            }
+          </div>
+          {course.description && (
+            <p className="text-sm text-[#5a7184] leading-relaxed mb-4">{course.description}</p>
+          )}
+          {course.teacher && (
+            <div className="flex items-center gap-3 p-4 bg-[#f5f7fa] rounded-xl">
+              {course.teacher.avatarUrl && (
+                <img src={course.teacher.avatarUrl} alt={course.teacher.name} className="w-12 h-12 rounded-full object-cover border-2 border-[#dde3ec]" />
+              )}
+              <div>
+                <div className="font-semibold text-[#0f1f35]">{course.teacher.name}</div>
+                <div className="text-sm text-[#5a7184]">{course.teacher.college} · {course.teacher.title || '教师'}</div>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Reviews Section */}
+      <div className="flex items-center justify-between mb-6">
+        <h2 className="font-serif text-2xl font-bold text-[#0f1f35]">学生评价 ({reviews.length})</h2>
         <button
           onClick={onWriteReview}
-          className="mt-4 text-sm font-semibold text-[#2d6a9f] hover:text-[#1e3a5f] transition-colors"
+          className="bg-[#1e3a5f] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors"
         >
-          立即写评价 →
+          写评价
         </button>
       </div>
-    ) : (
-      <div className="space-y-4">
-        {reviews.map((review) => (
-          <ReviewCard
-            key={review.id}
-            review={review}
-            likedIds={likedIds}
-            onLike={onLike}
-            onComment={onComment}
-            onReport={onReport}
-          />
-        ))}
-      </div>
-    )}
-  </div>
-);
+
+      {reviews.length === 0 ? (
+        <div className="text-center py-16 bg-white rounded-2xl border border-[#dde3ec]">
+          <Star className="w-12 h-12 mx-auto mb-3 text-[#dde3ec]" />
+          <p className="text-[#5a7184]">暂无评价，成为第一个分享的同学吧！</p>
+          <button
+            onClick={onWriteReview}
+            className="mt-4 text-sm font-semibold text-[#2d6a9f] hover:text-[#1e3a5f] transition-colors"
+          >
+            立即写评价 →
+          </button>
+        </div>
+      ) : (
+        <div className="space-y-4">
+          {reviews.map((review) => (
+            <ReviewCard
+              key={review.id}
+              review={review}
+              likedIds={likedIds}
+              onLike={onLike}
+              onComment={onComment}
+              onReport={onReport}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
 
 // ============================================
 // Reviews Feed View
@@ -915,145 +886,150 @@ const WriteReviewView = ({
   const [grading, setGrading] = useState(0);
   const [workload, setWorkload] = useState(0);
   const [recommend, setRecommend] = useState(0);
-  const [isAnonymous, setIsAnonymous] = useState(true);
-  const [loading, setLoading] = useState(false);
+  const [isAnonymous, setIsAnonymous] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!courseId || !content || !rating || !grading || !workload || !recommend) {
-      toast.error('请填写所有必填项');
+      toast.error('请填写所有必填字段');
       return;
     }
-    setLoading(true);
+    
+    setSubmitting(true);
     try {
-      const res = await reviewsApi.create({ courseId, content, rating, grading, workload, recommend, isAnonymous });
+      const res = await reviewsApi.create({
+        courseId,
+        content,
+        rating,
+        grading,
+        workload,
+        recommend,
+        isAnonymous,
+      });
       if (res.success) {
-        toast.success('评价已提交', { description: '感谢你的分享！' });
+        toast.success('评价已发布');
         onSuccess(res.data);
-      } else {
-        toast.error('提交失败', { description: res.message });
       }
-    } catch {
-      toast.error('网络错误，请稍后重试');
+    } catch (error) {
+      console.error('Error submitting review:', error);
+      toast.error('发布失败，请重试');
     } finally {
-      setLoading(false);
+      setSubmitting(false);
     }
   };
 
   const RatingSelect = ({ label, value, onChange, options }: { label: string; value: number; onChange: (v: number) => void; options: string[] }) => (
     <div>
       <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">{label}</label>
-      <select
-        value={value || ''}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full text-sm text-[#0f1f35] bg-white border border-[#dde3ec] rounded-xl px-3 py-3 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
-      >
-        <option value="">选择</option>
-        {options.map((opt, i) => (
-          <option key={i} value={i + 1}>{opt}</option>
+      <div className="space-y-1">
+        {options.map((option, index) => (
+          <label key={index} className="flex items-center gap-3 cursor-pointer p-3 rounded-xl hover:bg-[#f5f7fa] transition-colors">
+            <input
+              type="radio"
+              name={label}
+              value={index + 1}
+              checked={value === index + 1}
+              onChange={() => onChange(index + 1)}
+              className="accent-[#1e3a5f]"
+            />
+            <span className="text-sm text-[#0f1f35]">{option}</span>
+          </label>
         ))}
-      </select>
+      </div>
     </div>
   );
 
   return (
-    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="max-w-2xl mx-auto">
-        <div className="text-center mb-10">
-          <h2 className="font-serif text-3xl font-bold text-[#0f1f35] mb-3">发布课程评价</h2>
-          <p className="text-[#5a7184] leading-relaxed">你的经验是同学们最宝贵的参考。匿名发布，保护隐私。</p>
+    <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h2 className="font-serif text-2xl font-bold text-[#1e3a5f] mb-6">写评价</h2>
+      <form onSubmit={handleSubmit} className="bg-white rounded-2xl border border-[#dde3ec] p-6 shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)] space-y-6">
+        <div>
+          <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">选择课程 *</label>
+          <select
+            value={courseId}
+            onChange={(e) => setCourseId(e.target.value)}
+            className="w-full text-sm text-[#0f1f35] bg-white border border-[#dde3ec] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
+          >
+            <option value="">选择课程</option>
+            {courses.map((c) => (
+              <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
+            ))}
+          </select>
         </div>
-        <div className="bg-[#f5f7fa] rounded-2xl border border-[#dde3ec] p-8 shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)]">
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div>
-              <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">课程 *</label>
-              <select
-                value={courseId}
-                onChange={(e) => setCourseId(e.target.value)}
-                className="w-full text-sm text-[#0f1f35] bg-white border border-[#dde3ec] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
-              >
-                <option value="">选择课程</option>
-                {courses.map((c) => (
-                  <option key={c.id} value={c.id}>{c.name} ({c.code})</option>
-                ))}
-              </select>
-            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <RatingSelect
-                label="给分情况 *"
-                value={grading}
-                onChange={setGrading}
-                options={['⭐ 很差', '⭐⭐ 较差', '⭐⭐⭐ 一般', '⭐⭐⭐⭐ 良好', '⭐⭐⭐⭐⭐ 极好']}
-              />
-              <RatingSelect
-                label="作业量 *"
-                value={workload}
-                onChange={setWorkload}
-                options={['很少', '适中', '较多', '很多']}
-              />
-              <RatingSelect
-                label="推荐指数 *"
-                value={recommend}
-                onChange={setRecommend}
-                options={['强烈不推荐', '不推荐', '一般', '推荐', '强烈推荐']}
-              />
-            </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <RatingSelect
+            label="给分情况 *"
+            value={grading}
+            onChange={setGrading}
+            options={['⭐ 很差', '⭐⭐ 较差', '⭐⭐⭐ 一般', '⭐⭐⭐⭐ 良好', '⭐⭐⭐⭐⭐ 极好']}
+          />
+          <RatingSelect
+            label="作业量 *"
+            value={workload}
+            onChange={setWorkload}
+            options={['很少', '适中', '较多', '很多']}
+          />
+          <RatingSelect
+            label="推荐指数 *"
+            value={recommend}
+            onChange={setRecommend}
+            options={['强烈不推荐', '不推荐', '一般', '推荐', '强烈推荐']}
+          />
+        </div>
 
-            <div>
-              <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">综合评分 *</label>
-              <div className="flex gap-2">
-                {[1, 2, 3, 4, 5].map((s) => (
-                  <button
-                    key={s}
-                    type="button"
-                    onClick={() => setRating(s)}
-                    className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
-                      rating === s
-                        ? 'bg-[#1e3a5f] text-white border-[#1e3a5f]'
-                        : 'bg-white text-[#5a7184] border-[#dde3ec] hover:border-[#2d6a9f]'
-                    }`}
-                  >
-                    {s}分
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">评价内容 *</label>
-              <textarea
-                value={content}
-                onChange={(e) => setContent(e.target.value)}
-                rows={5}
-                placeholder="分享你的真实体验：课堂氛围、教学质量、考试难度、给分情况等，帮助更多同学做出选择…"
-                className="w-full text-sm text-[#0f1f35] bg-white border border-[#dde3ec] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f] transition-all resize-none placeholder:text-[#5a7184]"
-              />
-              <p className="text-xs text-[#5a7184] mt-1">{content.length} 字（至少 10 字）</p>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2.5 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={isAnonymous}
-                  onChange={(e) => setIsAnonymous(e.target.checked)}
-                  className="w-4 h-4 rounded border-[#dde3ec] accent-[#1e3a5f]"
-                />
-                <span className="text-sm text-[#5a7184]">匿名发布（推荐）</span>
-              </label>
+        <div>
+          <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">综合评分 *</label>
+          <div className="flex gap-2">
+            {[1, 2, 3, 4, 5].map((s) => (
               <button
-                type="submit"
-                disabled={loading}
-                className="bg-[#1e3a5f] text-white px-8 py-3 rounded-xl text-sm font-bold hover:bg-[#2d6a9f] transition-colors duration-200 shadow-[0_4px_12px_rgb(30_58_95/0.3)] disabled:opacity-60 flex items-center gap-2"
+                key={s}
+                type="button"
+                onClick={() => setRating(s)}
+                className={`flex-1 py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                  rating === s
+                    ? 'bg-[#1e3a5f] text-white border-[#1e3a5f]'
+                    : 'bg-white text-[#5a7184] border-[#dde3ec] hover:border-[#2d6a9f]'
+                }`}
               >
-                {loading && <Loader2 className="w-4 h-4 animate-spin" />}
-                提交评价
+                {s}分
               </button>
-            </div>
-          </form>
+            ))}
+          </div>
         </div>
-      </div>
+
+        <div>
+          <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">评价内容 *</label>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            placeholder="分享你的课程体验，包括课程内容、教师教学、考试难度等..."
+            rows={5}
+            className="w-full text-sm text-[#0f1f35] bg-white border border-[#dde3ec] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f] resize-none"
+          />
+        </div>
+
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="anonymous"
+            checked={isAnonymous}
+            onChange={(e) => setIsAnonymous(e.target.checked)}
+            className="accent-[#1e3a5f]"
+          />
+          <label htmlFor="anonymous" className="text-sm text-[#5a7184] cursor-pointer">匿名发布</label>
+        </div>
+
+        <button
+          type="submit"
+          disabled={submitting}
+          className="w-full bg-[#1e3a5f] text-white py-3.5 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+        >
+          {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+          发布评价
+        </button>
+      </form>
     </div>
   );
 };
@@ -1062,29 +1038,29 @@ const WriteReviewView = ({
 // Admin View
 // ============================================
 const AdminView = () => {
-  const [tab, setTab] = useState<'pending' | 'approved' | 'rejected'>('pending');
+  const [activeTab, setActiveTab] = useState('pending');
   const [reviews, setReviews] = useState<Review[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
 
-  const loadReviews = useCallback(async () => {
+  useEffect(() => {
+    loadReviews();
+  }, [activeTab]);
+
+  const loadReviews = async () => {
     setLoading(true);
     try {
-      const res = await reviewsApi.getAdminAll(tab);
+      const res = await reviewsApi.getAll();
       if (res.success) setReviews(res.data);
-    } catch {
-      toast.error('加载失败');
     } finally {
       setLoading(false);
     }
-  }, [tab]);
+  };
 
-  useEffect(() => { loadReviews(); }, [loadReviews]);
-
-  const handleStatus = async (id: string, status: string) => {
+  const handleStatus = async (id: string, status: 'approved' | 'rejected') => {
     try {
       const res = await reviewsApi.updateStatus(id, status);
       if (res.success) {
-        toast.success(status === 'approved' ? '已通过审核' : '已拒绝');
+        toast.success(status === 'approved' ? '已通过' : '已拒绝');
         loadReviews();
       }
     } catch {
@@ -1093,121 +1069,108 @@ const AdminView = () => {
   };
 
   const handleDelete = async (id: string) => {
-    try {
-      const res = await reviewsApi.delete(id);
-      if (res.success) {
-        toast.success('已删除');
-        loadReviews();
+    if (confirm('确定要删除这条评价吗？')) {
+      try {
+        const res = await reviewsApi.delete(id);
+        if (res.success) {
+          toast.success('已删除');
+          loadReviews();
+        }
+      } catch {
+        toast.error('删除失败');
       }
-    } catch {
-      toast.error('删除失败');
     }
   };
 
-  const tabs = [
-    { key: 'pending' as const, label: '待审核', color: 'text-[#d97706]' },
-    { key: 'approved' as const, label: '已通过', color: 'text-[#16a34a]' },
-    { key: 'rejected' as const, label: '已拒绝', color: 'text-[#dc2626]' },
-  ];
-
   return (
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-      <div className="mb-8">
-        <div className="flex items-center gap-3 mb-2">
-          <Shield className="w-6 h-6 text-[#1e3a5f]" />
-          <h2 className="font-serif text-2xl font-bold text-[#0f1f35]">管理后台</h2>
-        </div>
-        <p className="text-sm text-[#5a7184]">审核用户发布的评价内容，维护平台可信度</p>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-3 gap-4 mb-8">
-        {tabs.map(({ key, label, color }) => (
-          <div key={key} className="bg-white rounded-2xl border border-[#dde3ec] p-5 text-center shadow-[0_4px_12px_-1px_rgb(30_58_95/0.06)]">
-            <div className={`text-3xl font-serif font-bold ${color}`}>
-              {reviews.filter((r) => r.status === key).length}
-            </div>
-            <div className="text-sm text-[#5a7184] mt-1">{label}</div>
-          </div>
-        ))}
-      </div>
-
-      {/* Tabs */}
-      <div className="flex gap-1 bg-[#f5f7fa] rounded-xl p-1 mb-6">
-        {tabs.map(({ key, label }) => (
-          <button
-            key={key}
-            onClick={() => setTab(key)}
-            className={`flex-1 py-2.5 rounded-lg text-sm font-semibold transition-all ${
-              tab === key ? 'bg-white text-[#1e3a5f] shadow-sm' : 'text-[#5a7184] hover:text-[#1e3a5f]'
-            }`}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
-
-      {loading ? (
-        <div className="flex items-center justify-center py-20">
-          <Loader2 className="w-8 h-8 animate-spin text-[#1e3a5f]" />
-        </div>
-      ) : reviews.length === 0 ? (
-        <div className="text-center py-16 text-[#5a7184]">
-          <BarChart3 className="w-12 h-12 mx-auto mb-3 opacity-30" />
-          <p>暂无{tabs.find((t) => t.key === tab)?.label}的评价</p>
-        </div>
-      ) : (
-        <div className="space-y-4">
-          {reviews.map((review) => (
-            <div key={review.id} className="bg-white rounded-2xl border border-[#dde3ec] p-6 shadow-[0_4px_12px_-1px_rgb(30_58_95/0.06)]">
-              <div className="flex items-start justify-between gap-4 flex-wrap">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-2 flex-wrap">
-                    <span className="text-sm font-semibold text-[#0f1f35]">
-                      {review.isAnonymous ? '匿名用户' : (review.userName || '用户')}
-                    </span>
-                    {review.courseName && (
-                      <span className="text-xs text-[#5a7184] bg-[#f5f7fa] px-2 py-0.5 rounded-full">
-                        {review.courseName}
-                      </span>
-                    )}
-                    <div className="flex items-center gap-1">
-                      <Star className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />
-                      <span className="text-xs font-bold text-[#0f1f35]">{review.rating}.0</span>
-                    </div>
-                    <span className="text-xs text-[#5a7184]">{formatDate(review.createdAt)}</span>
-                  </div>
-                  <p className="text-sm text-[#0f1f35] leading-relaxed">{review.content}</p>
-                </div>
-                <div className="flex gap-2 flex-shrink-0">
-                  {tab === 'pending' && (
-                    <>
-                      <button
-                        onClick={() => handleStatus(review.id, 'approved')}
-                        className="flex items-center gap-1.5 bg-[#16a34a] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors"
-                      >
-                        <CheckCircle className="w-3.5 h-3.5" />通过
-                      </button>
-                      <button
-                        onClick={() => handleStatus(review.id, 'rejected')}
-                        className="flex items-center gap-1.5 bg-[#dc2626] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors"
-                      >
-                        <X className="w-3.5 h-3.5" />拒绝
-                      </button>
-                    </>
-                  )}
-                  <button
-                    onClick={() => handleDelete(review.id)}
-                    className="flex items-center gap-1.5 border border-[#dde3ec] text-[#5a7184] px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#f5f7fa] transition-colors"
-                  >
-                    删除
-                  </button>
-                </div>
-              </div>
-            </div>
+      <h2 className="font-serif text-2xl font-bold text-[#1e3a5f] mb-6">管理后台</h2>
+      
+      <div className="bg-white rounded-2xl border border-[#dde3ec] shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)]">
+        <div className="flex border-b border-[#dde3ec]">
+          {[
+            { key: 'pending', label: '待审核' },
+            { key: 'approved', label: '已通过' },
+            { key: 'rejected', label: '已拒绝' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-6 py-4 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === tab.key
+                  ? 'text-[#1e3a5f] border-[#1e3a5f] font-semibold'
+                  : 'text-[#5a7184] border-transparent hover:border-[#dde3ec] hover:text-[#1e3a5f]'
+              }`}
+            >
+              {tab.label}
+            </button>
           ))}
         </div>
-      )}
+        
+        <div className="p-6">
+          {loading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#1e3a5f]" /></div>
+          ) : reviews.length === 0 ? (
+            <p className="text-center text-[#5a7184] py-8">暂无评价</p>
+          ) : (
+            <div className="space-y-4">
+              {reviews.map((review) => (
+                <div key={review.id} className="border border-[#dde3ec] rounded-xl p-4">
+                  <div className="flex items-start gap-4">
+                    <div className="flex-shrink-0">
+                      <div className="w-10 h-10 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-medium">
+                        {review.isAnonymous ? '匿' : review.userName?.[0] || '?'}
+                      </div>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex flex-wrap items-center gap-3 mb-2">
+                        {review.courseName && (
+                          <span className="text-xs font-medium text-[#2d6a9f] bg-[#f5f7fa] px-2.5 py-1 rounded-full">
+                            {review.courseName}
+                          </span>
+                        )}
+                        <span className="text-xs text-[#5a7184]">
+                          {review.isAnonymous ? '匿名用户' : review.userName || '未知用户'}
+                        </span>
+                        <span className="text-xs text-[#5a7184]">{formatDate(review.createdAt)}</span>
+                        <div className="flex items-center gap-1">
+                          <Star className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />
+                          <span className="text-xs font-bold text-[#0f1f35]">{review.rating}.0</span>
+                        </div>
+                      </div>
+                      <p className="text-sm text-[#0f1f35] leading-relaxed mb-4">{review.content}</p>
+                      <div className="flex gap-2 flex-shrink-0">
+                        {activeTab === 'pending' && (
+                          <>
+                            <button
+                              onClick={() => handleStatus(review.id, 'approved')}
+                              className="flex items-center gap-1.5 bg-[#16a34a] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors"
+                            >
+                              <CheckCircle className="w-3.5 h-3.5" />通过
+                            </button>
+                            <button
+                              onClick={() => handleStatus(review.id, 'rejected')}
+                              className="flex items-center gap-1.5 bg-[#dc2626] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors"
+                            >
+                              <X className="w-3.5 h-3.5" />拒绝
+                            </button>
+                          </>
+                        )}
+                        <button
+                          onClick={() => handleDelete(review.id)}
+                          className="flex items-center gap-1.5 border border-[#dde3ec] text-[#5a7184] px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#f5f7fa] transition-colors"
+                        >
+                          删除
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 };
@@ -1275,36 +1238,40 @@ const CommentModal = ({
           ) : (
             comments.map((c) => (
               <div key={c.id} className="flex gap-3">
-                <div className="w-8 h-8 bg-[#f5f7fa] rounded-full flex items-center justify-center flex-shrink-0">
-                  <span className="text-xs font-bold text-[#1e3a5f]">{(c.userName || '匿')[0]}</span>
+                <div className="flex-shrink-0">
+                  <div className="w-8 h-8 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white text-xs font-medium">
+                    {c.userName?.[0] || '?'}
+                  </div>
                 </div>
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
-                    <span className="text-sm font-semibold text-[#0f1f35]">{c.userName || '匿名'}</span>
+                    <span className="text-xs font-medium text-[#0f1f35]">{c.userName || '未知用户'}</span>
                     <span className="text-xs text-[#5a7184]">{formatDate(c.createdAt)}</span>
                   </div>
-                  <p className="text-sm text-[#0f1f35]">{c.content}</p>
+                  <p className="text-sm text-[#0f1f35] leading-relaxed">{c.content}</p>
                 </div>
               </div>
             ))
           )}
         </div>
-        <form onSubmit={handleSubmit} className="p-4 border-t border-[#dde3ec] flex gap-3">
-          <input
-            type="text"
-            value={newComment}
-            onChange={(e) => setNewComment(e.target.value)}
-            placeholder="发表评论…"
-            className="flex-1 text-sm text-[#0f1f35] bg-[#f5f7fa] border border-[#dde3ec] rounded-xl px-4 py-2.5 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f] placeholder:text-[#5a7184]"
-          />
-          <button
-            type="submit"
-            disabled={submitting || !newComment.trim()}
-            className="bg-[#1e3a5f] text-white px-4 py-2.5 rounded-xl hover:bg-[#2d6a9f] transition-colors disabled:opacity-60 flex items-center gap-1.5"
-          >
-            {submitting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
-          </button>
-        </form>
+        <div className="border-t border-[#dde3ec] p-6">
+          <form onSubmit={handleSubmit} className="flex gap-3">
+            <input
+              type="text"
+              value={newComment}
+              onChange={(e) => setNewComment(e.target.value)}
+              placeholder="写下你的评论..."
+              className="flex-1 text-sm text-[#0f1f35] bg-[#f5f7fa] border border-[#dde3ec] rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[#2d6a9f]/30 focus:border-[#2d6a9f]"
+            />
+            <button
+              type="submit"
+              disabled={submitting || !newComment.trim()}
+              className="bg-[#1e3a5f] text-white px-4 py-3 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors disabled:opacity-60 flex-shrink-0"
+            >
+              <Send className="w-4 h-4" />
+            </button>
+          </form>
+        </div>
       </div>
     </div>
   );
@@ -1322,8 +1289,7 @@ const ReportModal = ({
 }) => {
   const [reason, setReason] = useState('');
   const [submitting, setSubmitting] = useState(false);
-
-  const reasons = ['内容不实', '恶意攻击', '广告广告', '涉及隐私', '其他原因'];
+  const reasons = ['广告/垃圾信息', '色情/暴力', '政治敏感', '其他'];
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -1448,7 +1414,30 @@ const Index = () => {
           setAllCourses(coursesRes.data);
           setFilteredCourses(coursesRes.data);
         }
-        if (reviewsRes.success) setAllReviews(reviewsRes.data);
+        
+        // Get reviews from backend
+        let reviews = [];
+        if (reviewsRes.success) reviews = reviewsRes.data;
+        
+        // Get reviews from local storage
+        const localReviewsJson = localStorage.getItem('localReviews');
+        if (localReviewsJson) {
+          try {
+            const localReviews = JSON.parse(localReviewsJson);
+            // Combine and deduplicate reviews (local reviews take precedence)
+            const combinedReviews = [...localReviews];
+            reviews.forEach(review => {
+              if (!combinedReviews.some(localReview => localReview.id === review.id)) {
+                combinedReviews.push(review);
+              }
+            });
+            reviews = combinedReviews;
+          } catch {
+            // Ignore local storage errors
+          }
+        }
+        
+        setAllReviews(reviews);
         if (collegesRes.success) setColleges(collegesRes.data);
       } catch {
         // silent
@@ -1486,6 +1475,91 @@ const Index = () => {
     applyFilters();
   }, [filters]);
 
+  // Update course ratings based on current reviews
+  const updateCourseRatings = (courseId: string, reviewsList?: Review[]) => {
+    // Get all reviews for this course
+    const courseReviews = reviewsList ? 
+      reviewsList.filter(review => review.courseId === courseId) : 
+      allReviews.filter(review => review.courseId === courseId);
+    
+    console.log('Course reviews for', courseId, ':', courseReviews);
+    
+    // Calculate course ratings based on reviews
+    if (courseReviews.length > 0) {
+      // Use all reviews, even if they don't have all required fields
+      // For missing fields, use default values
+      const totalRating = courseReviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+      const totalGrading = courseReviews.reduce((sum, review) => sum + (review.grading || 0), 0);
+      const totalWorkload = courseReviews.reduce((sum, review) => sum + (review.workload || 0), 0);
+      const totalRecommend = courseReviews.reduce((sum, review) => sum + (review.recommend || 0), 0);
+      
+      const avgRating = totalRating / courseReviews.length;
+      const avgGrading = totalGrading / courseReviews.length;
+      const avgWorkload = totalWorkload / courseReviews.length;
+      const avgRecommend = totalRecommend / courseReviews.length;
+      
+      console.log('Calculated ratings in updateCourseRatings:', {
+        reviewsCount: courseReviews.length,
+        totalRating,
+        totalGrading,
+        totalWorkload,
+        totalRecommend,
+        avgRating,
+        avgGrading,
+        avgWorkload,
+        avgRecommend,
+        reviewCount: courseReviews.length
+      });
+      
+      // Update course detail if current course is the one being reviewed
+      if (courseDetail && courseDetail.id === courseId) {
+        const updatedCourse = {
+          ...courseDetail,
+          avgRating,
+          avgGrading,
+          avgWorkload,
+          avgRecommend,
+          reviewCount: courseReviews.length
+        };
+        setCourseDetail(updatedCourse);
+        console.log('Updated courseDetail:', updatedCourse);
+      }
+      
+      // Update allCourses list
+      const updatedCourses = allCourses.map(course => {
+        if (course.id === courseId) {
+          return {
+            ...course,
+            avgRating,
+            avgGrading,
+            avgWorkload,
+            avgRecommend,
+            reviewCount: courseReviews.length
+          };
+        }
+        return course;
+      });
+      setAllCourses(updatedCourses);
+      
+      // Also update filteredCourses to ensure course list page shows updated ratings
+      setFilteredCourses(prev => prev.map(course => {
+        if (course.id === courseId) {
+          return {
+            ...course,
+            avgRating,
+            avgGrading,
+            avgWorkload,
+            avgRecommend,
+            reviewCount: courseReviews.length
+          };
+        }
+        return course;
+      }));
+    } else {
+      console.log('No reviews found for course:', courseId);
+    }
+  };
+
   const handleCourseClick = async (id: string) => {
     setSelectedCourseId(id);
     setCurrentView('course-detail');
@@ -1494,9 +1568,76 @@ const Index = () => {
         coursesApi.getById(id),
         reviewsApi.getByCourse(id),
       ]);
-      if (courseRes.success) setCourseDetail(courseRes.data);
-      if (reviewsRes.success) setCourseReviews(reviewsRes.data);
-    } catch {
+      
+      if (courseRes.success) {
+        let course = courseRes.data;
+        
+        // Get reviews from backend
+        let reviews = [];
+        if (reviewsRes.success) reviews = reviewsRes.data;
+        
+        // Get local reviews for this course
+        const localReviews = allReviews.filter(review => review.courseId === id);
+        
+        // Combine and deduplicate reviews (local reviews take precedence)
+        const combinedReviews = [...localReviews];
+        reviews.forEach(review => {
+          if (!combinedReviews.some(localReview => localReview.id === review.id)) {
+            combinedReviews.push(review);
+          }
+        });
+        
+        console.log('Combined reviews for course', id, ':', combinedReviews);
+        
+        // Sort reviews by createdAt (newest first)
+        combinedReviews.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        setCourseReviews(combinedReviews);
+        
+        // Calculate course ratings based on reviews
+        if (combinedReviews.length > 0) {
+          // Use all reviews, even if they don't have all required fields
+          // For missing fields, use default values
+          const totalRating = combinedReviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+          const totalGrading = combinedReviews.reduce((sum, review) => sum + (review.grading || 0), 0);
+          const totalWorkload = combinedReviews.reduce((sum, review) => sum + (review.workload || 0), 0);
+          const totalRecommend = combinedReviews.reduce((sum, review) => sum + (review.recommend || 0), 0);
+          
+          const avgRating = totalRating / combinedReviews.length;
+          const avgGrading = totalGrading / combinedReviews.length;
+          const avgWorkload = totalWorkload / combinedReviews.length;
+          const avgRecommend = totalRecommend / combinedReviews.length;
+          
+          console.log('Calculated ratings in handleCourseClick:', {
+            reviewsCount: combinedReviews.length,
+            totalRating,
+            totalGrading,
+            totalWorkload,
+            totalRecommend,
+            avgRating,
+            avgGrading,
+            avgWorkload,
+            avgRecommend,
+            reviewCount: combinedReviews.length
+          });
+          
+          course = {
+            ...course,
+            avgRating,
+            avgGrading,
+            avgWorkload,
+            avgRecommend,
+            reviewCount: combinedReviews.length
+          };
+        }
+        
+        console.log('Updated course in handleCourseClick:', course);
+        setCourseDetail(course);
+        
+        // Update course ratings in allCourses and filteredCourses
+        updateCourseRatings(id, combinedReviews);
+      }
+    } catch (error) {
+      console.error('Error loading course details:', error);
       toast.error('加载课程详情失败');
     }
   };
@@ -1610,17 +1751,33 @@ const Index = () => {
             preselectedCourseId={selectedCourseId || undefined}
             onSuccess={(review) => {
               // Add the new review to allReviews list
-              setAllReviews(prev => [review, ...prev]);
+              const updatedReviews = [review, ...allReviews];
+              setAllReviews(updatedReviews);
+              
+              // Save reviews to local storage
+              localStorage.setItem('localReviews', JSON.stringify(updatedReviews));
               
               if (selectedCourseId) {
                 // Add the new review to courseReviews list
-                setCourseReviews(prev => [review, ...prev]);
-                // Return to course detail page
-                setCurrentView('course-detail');
-              } else {
-                // Navigate to reviews page if no course selected
-                handleNavigate('reviews');
+                const updatedCourseReviews = [review, ...courseReviews];
+                setCourseReviews(updatedCourseReviews);
               }
+              
+              // Update course ratings based on new reviews
+              // Use setTimeout to ensure state updates complete before calculating ratings
+              setTimeout(() => {
+                updateCourseRatings(review.courseId, updatedReviews);
+                
+                if (selectedCourseId) {
+                  // Return to course detail page after another short delay to ensure ratings are updated
+                  setTimeout(() => {
+                    setCurrentView('course-detail');
+                  }, 100);
+                } else {
+                  // Navigate to reviews page if no course selected
+                  handleNavigate('reviews');
+                }
+              }, 50);
             }}
           />
         )}

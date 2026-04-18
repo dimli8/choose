@@ -7,7 +7,7 @@
 6 silly config load:file:C:\Program Files\nodejs\node_global\etc\npmrc
 7 verbose title npm run dev
 8 verbose argv "run" "dev"
-9 verbose logfile logs-max:10 dir:C:\Users\dimli\Desktop\新建文件夹\choose-main\frontend\.npm-cache\_logs\2026-04-11T07_54_33_667Z-
-10 verbose logfile C:\Users\dimli\Desktop\新建文件夹\choose-main\frontend\.npm-cache\_logs\2026-04-11T07_54_33_667Z-debug-0.log
+9 verbose logfile logs-max:10 dir:C:\Users\dimli\Desktop\新建文件夹\choose-main\frontend\.npm-cache\_logs\2026-04-18T08_46_26_373Z-
+10 verbose logfile C:\Users\dimli\Desktop\新建文件夹\choose-main\frontend\.npm-cache\_logs\2026-04-18T08_46_26_373Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files
