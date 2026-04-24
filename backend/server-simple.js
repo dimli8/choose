@@ -88,13 +88,22 @@ const users = [
     id: '1',
     name: 'John Doe',
     email: 'john@example.com',
-    password: 'password123' // In a real app, this would be hashed
+    password: 'password123', // In a real app, this would be hashed
+    role: 'user'
   },
   {
     id: '2',
     name: 'Jane Smith',
     email: 'jane@example.com',
-    password: 'password123' // In a real app, this would be hashed
+    password: 'password123', // In a real app, this would be hashed
+    role: 'user'
+  },
+  {
+    id: '3',
+    name: 'Admin User',
+    email: 'admin@example.com',
+    password: 'admin123', // In a real app, this would be hashed
+    role: 'admin'
   }
 ];
 
@@ -358,7 +367,8 @@ app.post('/api/auth/login', (req, res) => {
       user: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     }
   });
@@ -385,7 +395,8 @@ app.get('/api/auth/me', (req, res) => {
       user: {
         id: user.id,
         name: user.name,
-        email: user.email
+        email: user.email,
+        role: user.role
       }
     }
   });
