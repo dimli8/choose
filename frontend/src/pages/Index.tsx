@@ -1948,23 +1948,23 @@ const Index = () => {
         let reviews = [];
         if (reviewsRes.success) reviews = reviewsRes.data;
         
-        // Get reviews from local storage
-        const localReviewsJson = localStorage.getItem('localReviews');
-        if (localReviewsJson) {
-          try {
-            const localReviews = JSON.parse(localReviewsJson);
-            // Combine and deduplicate reviews (local reviews take precedence)
-            const combinedReviews = [...localReviews];
-            reviews.forEach(review => {
-              if (!combinedReviews.some(localReview => localReview.id === review.id)) {
-                combinedReviews.push(review);
-              }
-            });
-            reviews = combinedReviews;
-          } catch {
-            // Ignore local storage errors
-          }
-        }
+        // For development, skip local storage to ensure we get fresh reviews from backend
+        // const localReviewsJson = localStorage.getItem('localReviews');
+        // if (localReviewsJson) {
+        //   try {
+        //     const localReviews = JSON.parse(localReviewsJson);
+        //     // Combine and deduplicate reviews (backend reviews take precedence)
+        //     const combinedReviews = [...reviews];
+        //     localReviews.forEach(localReview => {
+        //       if (!combinedReviews.some(review => review.id === localReview.id)) {
+        //         combinedReviews.push(localReview);
+        //       }
+        //     });
+        //     reviews = combinedReviews;
+        //   } catch {
+        //     // Ignore local storage errors
+        //   }
+        // }
         
         setAllReviews(reviews);
         if (collegesRes.success) setColleges(collegesRes.data);
@@ -2014,13 +2014,62 @@ const Index = () => {
           search: filters.search || undefined,
           sortBy: filters.sortBy || undefined,
         });
-        if (res.success) setFilteredCourses(res.data);
+        if (res.success) {
+          // Update each course with ratings and review count
+          const updatedCourses = res.data.map((course: Course) => {
+            const courseReviews = allReviews.filter(review => review.courseId === course.id);
+            if (courseReviews.length > 0) {
+              const totalRating = courseReviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+              const totalGrading = courseReviews.reduce((sum, review) => sum + (review.grading || 0), 0);
+              const totalWorkload = courseReviews.reduce((sum, review) => sum + (review.workload || 0), 0);
+              const totalRecommend = courseReviews.reduce((sum, review) => sum + (review.recommend || 0), 0);
+              
+              return {
+                ...course,
+                avgRating: totalRating / courseReviews.length,
+                avgGrading: totalGrading / courseReviews.length,
+                avgWorkload: totalWorkload / courseReviews.length,
+                avgRecommend: totalRecommend / courseReviews.length,
+                reviewCount: courseReviews.length
+              };
+            }
+            return course;
+          });
+          setFilteredCourses(updatedCourses);
+        }
       } finally {
         setCoursesLoading(false);
       }
     };
     applyFilters();
-  }, [filters]);
+  }, [filters, allReviews]);
+
+  // Update all courses with ratings when reviews change
+  useEffect(() => {
+    if (allCourses.length > 0 && allReviews.length > 0) {
+      // Update allCourses with ratings
+      const updatedAllCourses = allCourses.map((course) => {
+        const courseReviews = allReviews.filter(review => review.courseId === course.id);
+        if (courseReviews.length > 0) {
+          const totalRating = courseReviews.reduce((sum, review) => sum + (review.rating || 0), 0);
+          const totalGrading = courseReviews.reduce((sum, review) => sum + (review.grading || 0), 0);
+          const totalWorkload = courseReviews.reduce((sum, review) => sum + (review.workload || 0), 0);
+          const totalRecommend = courseReviews.reduce((sum, review) => sum + (review.recommend || 0), 0);
+          
+          return {
+            ...course,
+            avgRating: totalRating / courseReviews.length,
+            avgGrading: totalGrading / courseReviews.length,
+            avgWorkload: totalWorkload / courseReviews.length,
+            avgRecommend: totalRecommend / courseReviews.length,
+            reviewCount: courseReviews.length
+          };
+        }
+        return course;
+      });
+      setAllCourses(updatedAllCourses);
+    }
+  }, [allReviews]);
 
   // Update course ratings based on current reviews
   const updateCourseRatings = (courseId: string, reviewsList?: Review[]) => {
@@ -2126,11 +2175,11 @@ const Index = () => {
         // Get local reviews for this course
         const localReviews = allReviews.filter(review => review.courseId === id);
         
-        // Combine and deduplicate reviews (local reviews take precedence)
-        const combinedReviews = [...localReviews];
-        reviews.forEach(review => {
-          if (!combinedReviews.some(localReview => localReview.id === review.id)) {
-            combinedReviews.push(review);
+        // Combine and deduplicate reviews (backend reviews take precedence)
+        const combinedReviews = [...reviews];
+        localReviews.forEach(localReview => {
+          if (!combinedReviews.some(review => review.id === localReview.id)) {
+            combinedReviews.push(localReview);
           }
         });
         
