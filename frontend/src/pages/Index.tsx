@@ -1064,9 +1064,11 @@ const WriteReviewView = ({
 const ProfileView = ({
   onCourseClick,
   onLogout,
+  onProfileUpdate,
 }: {
   onCourseClick: (id: string) => void;
   onLogout: () => void;
+  onProfileUpdate: () => void;
 }) => {
   const [activeTab, setActiveTab] = useState('info');
   const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; role: string; reviews: Review[] } | null>(null);
@@ -1134,6 +1136,7 @@ const ProfileView = ({
         toast.success('资料更新成功');
         setUserProfile((prev) => prev ? { ...prev, name: editName } : null);
         setEditPassword('');
+        onProfileUpdate();
       } else {
         toast.error(data.message || '更新失败');
       }
@@ -1902,25 +1905,30 @@ const Index = () => {
   const [userName, setUserName] = useState('');
   const [userRole, setUserRole] = useState('student');
 
-  useEffect(() => {
-    const loadUserInfo = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) return;
-      try {
-        const res = await fetch('/api/auth/me', {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const data = await res.json();
-        if (data.success && data.data.user) {
-          setUserName(data.data.user.name || data.data.user.email || '');
-          setUserRole(data.data.user.role || 'student');
-        }
-      } catch {
-        // ignore
+  const loadUserInfo = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const res = await fetch('/api/auth/me', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success && data.data.user) {
+        setUserName(data.data.user.name || data.data.user.email || '');
+        setUserRole(data.data.user.role || 'student');
       }
-    };
+    } catch {
+      // ignore
+    }
+  };
+
+  useEffect(() => {
     loadUserInfo();
   }, []);
+
+  const handleProfileUpdate = () => {
+    loadUserInfo();
+  };
 
   // Load initial data
   useEffect(() => {
@@ -2357,6 +2365,7 @@ const Index = () => {
           <ProfileView
             onCourseClick={handleCourseClick}
             onLogout={handleLogout}
+            onProfileUpdate={handleProfileUpdate}
           />
         )}
 
