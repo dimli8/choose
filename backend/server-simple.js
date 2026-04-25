@@ -675,6 +675,43 @@ app.post('/api/courses', verifyAdmin, (req, res) => {
   res.json({ success: true, data: newCourse });
 });
 
+// Update course (admin only)
+app.put('/api/courses/:id', verifyAdmin, (req, res) => {
+  const { title, description, teacher, department, type } = req.body;
+  const courseIndex = courses.findIndex(c => c.id === req.params.id);
+  
+  if (courseIndex === -1) {
+    return res.status(404).json({ success: false, message: '课程不存在' });
+  }
+  
+  if (!title || !department || !type) {
+    return res.status(400).json({ success: false, message: '请填写必填项' });
+  }
+  
+  courses[courseIndex] = {
+    ...courses[courseIndex],
+    title,
+    description: description || '',
+    teacher: teacher || '',
+    department,
+    type
+  };
+  
+  res.json({ success: true, data: courses[courseIndex] });
+});
+
+// Delete course (admin only)
+app.delete('/api/courses/:id', verifyAdmin, (req, res) => {
+  const courseIndex = courses.findIndex(c => c.id === req.params.id);
+  
+  if (courseIndex === -1) {
+    return res.status(404).json({ success: false, message: '课程不存在' });
+  }
+  
+  courses.splice(courseIndex, 1);
+  res.json({ success: true, message: '课程已删除' });
+});
+
 app.get('/api/courses/:id', (req, res) => {
   const course = courses.find(c => c.id === req.params.id);
   if (course) {

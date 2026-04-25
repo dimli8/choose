@@ -1043,6 +1043,7 @@ const AdminView = () => {
   const [loading, setLoading] = useState(false);
   
   // Course management state
+  const [courses, setCourses] = useState<Course[]>([]);
   const [courseForm, setCourseForm] = useState({
     title: '',
     description: '',
@@ -1050,11 +1051,14 @@ const AdminView = () => {
     department: '',
     type: '专选课'
   });
+  const [editingCourse, setEditingCourse] = useState<Course | null>(null);
   const [submittingCourse, setSubmittingCourse] = useState(false);
 
   useEffect(() => {
     if (activeTab === 'reviews') {
       loadReviews();
+    } else if (activeTab === 'courses') {
+      loadCourses();
     }
   }, [activeTab]);
 
@@ -1063,6 +1067,16 @@ const AdminView = () => {
     try {
       const res = await reviewsApi.getAll();
       if (res.success) setReviews(res.data);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadCourses = async () => {
+    setLoading(true);
+    try {
+      const res = await coursesApi.getAll();
+      if (res.success) setCourses(res.data);
     } finally {
       setLoading(false);
     }
@@ -1125,6 +1139,76 @@ const AdminView = () => {
     }
   };
 
+  const handleEditCourse = (course: Course) => {
+    setEditingCourse(course);
+    setCourseForm({
+      title: course.name || course.title || '',
+      description: course.description || '',
+      teacher: course.teacher || '',
+      department: course.college || course.department || '',
+      type: course.type || '专选课'
+    });
+  };
+
+  const handleUpdateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!courseForm.title || !courseForm.department || !courseForm.type || !editingCourse) {
+      toast.error('请填写必填项');
+      return;
+    }
+    setSubmittingCourse(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/courses/${editingCourse.id}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(courseForm)
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('课程更新成功');
+        setCourseForm({ title: '', description: '', teacher: '', department: '', type: '专选课' });
+        setEditingCourse(null);
+        loadCourses();
+      } else {
+        toast.error(data.message || '更新失败');
+      }
+    } catch {
+      toast.error('更新失败');
+    } finally {
+      setSubmittingCourse(false);
+    }
+  };
+
+  const handleDeleteCourse = async (id: string) => {
+    if (confirm('确定要删除这门课程吗？')) {
+      try {
+        const token = localStorage.getItem('token');
+        const res = await fetch(`/api/courses/${id}`, {
+          method: 'DELETE',
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          toast.success('课程已删除');
+          loadCourses();
+        } else {
+          toast.error(data.message || '删除失败');
+        }
+      } catch {
+        toast.error('删除失败');
+      }
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingCourse(null);
+    setCourseForm({ title: '', description: '', teacher: '', department: '', type: '专选课' });
+  };
+
   const filteredReviews = activeTab === 'reviews' ? reviews : [];
 
   return (
@@ -1135,7 +1219,7 @@ const AdminView = () => {
         <div className="flex border-b border-[#dde3ec]">
           {[
             { key: 'reviews', label: '评价管理' },
-            { key: 'courses', label: '添加课程' },
+            { key: 'courses', label: '课程管理' },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -1215,75 +1299,133 @@ const AdminView = () => {
               </div>
             )
           ) : (
-            <form onSubmit={handleCreateCourse} className="max-w-xl mx-auto space-y-4">
-              <h3 className="font-serif text-lg font-bold text-[#1e3a5f] mb-4">添加新课程</h3>
-              <div>
-                <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程名称 *</label>
-                <input
-                  type="text"
-                  value={courseForm.title}
-                  onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
-                  placeholder="请输入课程名称"
-                />
+            <div className="space-y-6">
+              <div className="bg-[#f5f7fa] rounded-xl p-6 max-w-xl mx-auto">
+                <h3 className="font-serif text-lg font-bold text-[#1e3a5f] mb-4">
+                  {editingCourse ? '编辑课程' : '添加新课程'}
+                </h3>
+                <form onSubmit={editingCourse ? handleUpdateCourse : handleCreateCourse} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程名称 *</label>
+                    <input
+                      type="text"
+                      value={courseForm.title}
+                      onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                      placeholder="请输入课程名称"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程描述</label>
+                    <textarea
+                      value={courseForm.description}
+                      onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                      placeholder="请输入课程描述"
+                      rows={3}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#0f1f35] mb-1">授课教师</label>
+                    <input
+                      type="text"
+                      value={courseForm.teacher}
+                      onChange={(e) => setCourseForm({...courseForm, teacher: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                      placeholder="请输入授课教师"
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#0f1f35] mb-1">所属学院 *</label>
+                    <select
+                      value={courseForm.department}
+                      onChange={(e) => setCourseForm({...courseForm, department: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                    >
+                      <option value="">选择学院</option>
+                      <option value="数学与统计学院">数学与统计学院</option>
+                      <option value="外国语学院">外国语学院</option>
+                      <option value="体育学院">体育学院</option>
+                      <option value="管理学院">管理学院</option>
+                      <option value="艺术学院">艺术学院</option>
+                      <option value="计算机学院">计算机学院</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程类型 *</label>
+                    <select
+                      value={courseForm.type}
+                      onChange={(e) => setCourseForm({...courseForm, type: e.target.value})}
+                      className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                    >
+                      <option value="专选课">专选课</option>
+                      <option value="通识课">通识课</option>
+                      <option value="体育课">体育课</option>
+                    </select>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      type="submit"
+                      disabled={submittingCourse}
+                      className="flex-1 bg-[#1e3a5f] text-white py-3 rounded-xl text-sm font-bold hover:bg-[#2d4a6f] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+                    >
+                      {submittingCourse && <Loader2 className="w-4 h-4 animate-spin" />}
+                      {editingCourse ? '更新课程' : '创建课程'}
+                    </button>
+                    {editingCourse && (
+                      <button
+                        type="button"
+                        onClick={handleCancelEdit}
+                        className="flex-1 border border-[#dde3ec] text-[#5a7184] py-3 rounded-xl text-sm font-bold hover:bg-[#f5f7fa] transition-colors"
+                      >
+                        取消
+                      </button>
+                    )}
+                  </div>
+                </form>
               </div>
+              
               <div>
-                <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程描述</label>
-                <textarea
-                  value={courseForm.description}
-                  onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
-                  placeholder="请输入课程描述"
-                  rows={3}
-                />
+                <h3 className="font-serif text-lg font-bold text-[#1e3a5f] mb-4">课程列表</h3>
+                {loading ? (
+                  <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#1e3a5f]" /></div>
+                ) : courses.length === 0 ? (
+                  <p className="text-center text-[#5a7184] py-8">暂无课程</p>
+                ) : (
+                  <div className="space-y-3">
+                    {courses.map((course) => (
+                      <div key={course.id} className="border border-[#dde3ec] rounded-xl p-4 flex items-center justify-between">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2 mb-1">
+                            <h4 className="font-medium text-[#0f1f35]">{course.name || course.title}</h4>
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-[#f5f7fa] text-[#5a7184]">
+                              {course.type}
+                            </span>
+                          </div>
+                          <p className="text-sm text-[#5a7184]">
+                            {course.college || course.department} · {course.teacher || '未知教师'}
+                          </p>
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => handleEditCourse(course)}
+                            className="flex items-center gap-1.5 border border-[#dde3ec] text-[#5a7184] px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#f5f7fa] transition-colors"
+                          >
+                            编辑
+                          </button>
+                          <button
+                            onClick={() => handleDeleteCourse(course.id)}
+                            className="flex items-center gap-1.5 border border-[#dde3ec] text-[#dc2626] px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors"
+                          >
+                            删除
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
-              <div>
-                <label className="block text-sm font-medium text-[#0f1f35] mb-1">授课教师</label>
-                <input
-                  type="text"
-                  value={courseForm.teacher}
-                  onChange={(e) => setCourseForm({...courseForm, teacher: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
-                  placeholder="请输入授课教师"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#0f1f35] mb-1">所属学院 *</label>
-                <select
-                  value={courseForm.department}
-                  onChange={(e) => setCourseForm({...courseForm, department: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
-                >
-                  <option value="">选择学院</option>
-                  <option value="数学与统计学院">数学与统计学院</option>
-                  <option value="外国语学院">外国语学院</option>
-                  <option value="体育学院">体育学院</option>
-                  <option value="管理学院">管理学院</option>
-                  <option value="艺术学院">艺术学院</option>
-                  <option value="计算机学院">计算机学院</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程类型 *</label>
-                <select
-                  value={courseForm.type}
-                  onChange={(e) => setCourseForm({...courseForm, type: e.target.value})}
-                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
-                >
-                  <option value="专选课">专选课</option>
-                  <option value="通识课">通识课</option>
-                  <option value="体育课">体育课</option>
-                </select>
-              </div>
-              <button
-                type="submit"
-                disabled={submittingCourse}
-                className="w-full bg-[#1e3a5f] text-white py-3 rounded-xl text-sm font-bold hover:bg-[#2d4a6f] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
-              >
-                {submittingCourse && <Loader2 className="w-4 h-4 animate-spin" />}
-                创建课程
-              </button>
-            </form>
+            </div>
           )}
         </div>
       </div>
