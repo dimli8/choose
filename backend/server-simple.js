@@ -560,8 +560,8 @@ const users = [
 ];
 
 // Generate a simple token (in a real app, use JWT)
-const generateToken = (userId) => {
-  return `token-${userId}-${Date.now()}`;
+const generateToken = (user) => {
+  return `token-${user.id}-${user.role}-${Date.now()}`;
 };
 
 // API Routes
@@ -637,6 +637,42 @@ app.get('/api/courses/colleges', (req, res) => {
   // Extract unique colleges from courses
   const colleges = [...new Set(courses.map(c => c.department))];
   res.json({ success: true, data: colleges });
+});
+
+// Middleware to verify admin access
+const verifyAdmin = (req, res, next) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ success: false, message: '未授权' });
+  }
+  const tokenParts = token.split('-');
+  if (tokenParts.length < 3 || tokenParts[1] !== '3' || tokenParts[2] !== 'admin') {
+    return res.status(403).json({ success: false, message: '需要管理员权限' });
+  }
+  next();
+};
+
+// Create course (admin only)
+app.post('/api/courses', verifyAdmin, (req, res) => {
+  const { title, description, teacher, department, type } = req.body;
+  
+  if (!title || !department || !type) {
+    return res.status(400).json({ success: false, message: '请填写必填项' });
+  }
+  
+  const newCourse = {
+    id: String(courses.length + 1),
+    title,
+    description: description || '',
+    teacher: teacher || '',
+    department,
+    type,
+    rating: 0,
+    reviewCount: 0
+  };
+  
+  courses.push(newCourse);
+  res.json({ success: true, data: newCourse });
 });
 
 app.get('/api/courses/:id', (req, res) => {
@@ -810,7 +846,7 @@ app.post('/api/auth/login', (req, res) => {
   }
   
   // Generate token
-  const token = generateToken(user.id);
+  const token = generateToken(user);
   
   res.json({
     success: true,

@@ -1038,12 +1038,24 @@ const WriteReviewView = ({
 // Admin View
 // ============================================
 const AdminView = () => {
-  const [activeTab, setActiveTab] = useState('pending');
+  const [activeTab, setActiveTab] = useState('reviews');
   const [reviews, setReviews] = useState<Review[]>([]);
   const [loading, setLoading] = useState(false);
+  
+  // Course management state
+  const [courseForm, setCourseForm] = useState({
+    title: '',
+    description: '',
+    teacher: '',
+    department: '',
+    type: '专选课'
+  });
+  const [submittingCourse, setSubmittingCourse] = useState(false);
 
   useEffect(() => {
-    loadReviews();
+    if (activeTab === 'reviews') {
+      loadReviews();
+    }
   }, [activeTab]);
 
   const loadReviews = async () => {
@@ -1082,6 +1094,39 @@ const AdminView = () => {
     }
   };
 
+  const handleCreateCourse = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!courseForm.title || !courseForm.department || !courseForm.type) {
+      toast.error('请填写必填项');
+      return;
+    }
+    setSubmittingCourse(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/courses', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(courseForm)
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('课程创建成功');
+        setCourseForm({ title: '', description: '', teacher: '', department: '', type: '专选课' });
+      } else {
+        toast.error(data.message || '创建失败');
+      }
+    } catch {
+      toast.error('创建失败');
+    } finally {
+      setSubmittingCourse(false);
+    }
+  };
+
+  const filteredReviews = activeTab === 'reviews' ? reviews : [];
+
   return (
     <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h2 className="font-serif text-2xl font-bold text-[#1e3a5f] mb-6">管理后台</h2>
@@ -1089,9 +1134,8 @@ const AdminView = () => {
       <div className="bg-white rounded-2xl border border-[#dde3ec] shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)]">
         <div className="flex border-b border-[#dde3ec]">
           {[
-            { key: 'pending', label: '待审核' },
-            { key: 'approved', label: '已通过' },
-            { key: 'rejected', label: '已拒绝' },
+            { key: 'reviews', label: '评价管理' },
+            { key: 'courses', label: '添加课程' },
           ].map((tab) => (
             <button
               key={tab.key}
@@ -1108,66 +1152,138 @@ const AdminView = () => {
         </div>
         
         <div className="p-6">
-          {loading ? (
-            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#1e3a5f]" /></div>
-          ) : reviews.length === 0 ? (
-            <p className="text-center text-[#5a7184] py-8">暂无评价</p>
-          ) : (
-            <div className="space-y-4">
-              {reviews.map((review) => (
-                <div key={review.id} className="border border-[#dde3ec] rounded-xl p-4">
-                  <div className="flex items-start gap-4">
-                    <div className="flex-shrink-0">
-                      <div className="w-10 h-10 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-medium">
-                        {review.isAnonymous ? '匿' : review.userName?.[0] || '?'}
-                      </div>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex flex-wrap items-center gap-3 mb-2">
-                        {review.courseName && (
-                          <span className="text-xs font-medium text-[#2d6a9f] bg-[#f5f7fa] px-2.5 py-1 rounded-full">
-                            {review.courseName}
-                          </span>
-                        )}
-                        <span className="text-xs text-[#5a7184]">
-                          {review.isAnonymous ? '匿名用户' : review.userName || '未知用户'}
-                        </span>
-                        <span className="text-xs text-[#5a7184]">{formatDate(review.createdAt)}</span>
-                        <div className="flex items-center gap-1">
-                          <Star className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />
-                          <span className="text-xs font-bold text-[#0f1f35]">{review.rating}.0</span>
+          {activeTab === 'reviews' ? (
+            loading ? (
+              <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#1e3a5f]" /></div>
+            ) : filteredReviews.length === 0 ? (
+              <p className="text-center text-[#5a7184] py-8">暂无评价</p>
+            ) : (
+              <div className="space-y-4">
+                {filteredReviews.map((review) => (
+                  <div key={review.id} className="border border-[#dde3ec] rounded-xl p-4">
+                    <div className="flex items-start gap-4">
+                      <div className="flex-shrink-0">
+                        <div className="w-10 h-10 rounded-full bg-[#1e3a5f] flex items-center justify-center text-white font-medium">
+                          {review.isAnonymous ? '匿' : review.userName?.[0] || '?'}
                         </div>
                       </div>
-                      <p className="text-sm text-[#0f1f35] leading-relaxed mb-4">{review.content}</p>
-                      <div className="flex gap-2 flex-shrink-0">
-                        {activeTab === 'pending' && (
-                          <>
-                            <button
-                              onClick={() => handleStatus(review.id, 'approved')}
-                              className="flex items-center gap-1.5 bg-[#16a34a] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors"
-                            >
-                              <CheckCircle className="w-3.5 h-3.5" />通过
-                            </button>
-                            <button
-                              onClick={() => handleStatus(review.id, 'rejected')}
-                              className="flex items-center gap-1.5 bg-[#dc2626] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors"
-                            >
-                              <X className="w-3.5 h-3.5" />拒绝
-                            </button>
-                          </>
-                        )}
-                        <button
-                          onClick={() => handleDelete(review.id)}
-                          className="flex items-center gap-1.5 border border-[#dde3ec] text-[#5a7184] px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#f5f7fa] transition-colors"
-                        >
-                          删除
-                        </button>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex flex-wrap items-center gap-3 mb-2">
+                          {review.courseName && (
+                            <span className="text-xs font-medium text-[#2d6a9f] bg-[#f5f7fa] px-2.5 py-1 rounded-full">
+                              {review.courseName}
+                            </span>
+                          )}
+                          <span className="text-xs text-[#5a7184]">
+                            {review.isAnonymous ? '匿名用户' : review.userName || '未知用户'}
+                          </span>
+                          <span className="text-xs text-[#5a7184]">{formatDate(review.createdAt)}</span>
+                          <div className="flex items-center gap-1">
+                            <Star className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />
+                            <span className="text-xs font-bold text-[#0f1f35]">{review.rating}.0</span>
+                          </div>
+                        </div>
+                        <p className="text-sm text-[#0f1f35] leading-relaxed mb-4">{review.content}</p>
+                        <div className="flex gap-2 flex-shrink-0">
+                          {review.status === 'pending' && (
+                            <>
+                              <button
+                                onClick={() => handleStatus(review.id, 'approved')}
+                                className="flex items-center gap-1.5 bg-[#16a34a] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-green-700 transition-colors"
+                              >
+                                <CheckCircle className="w-3.5 h-3.5" />通过
+                              </button>
+                              <button
+                                onClick={() => handleStatus(review.id, 'rejected')}
+                                className="flex items-center gap-1.5 bg-[#dc2626] text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-700 transition-colors"
+                              >
+                                <X className="w-3.5 h-3.5" />拒绝
+                              </button>
+                            </>
+                          )}
+                          <button
+                            onClick={() => handleDelete(review.id)}
+                            className="flex items-center gap-1.5 border border-[#dde3ec] text-[#5a7184] px-4 py-2 rounded-lg text-xs font-semibold hover:bg-[#f5f7fa] transition-colors"
+                          >
+                            删除
+                          </button>
+                        </div>
                       </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )
+          ) : (
+            <form onSubmit={handleCreateCourse} className="max-w-xl mx-auto space-y-4">
+              <h3 className="font-serif text-lg font-bold text-[#1e3a5f] mb-4">添加新课程</h3>
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程名称 *</label>
+                <input
+                  type="text"
+                  value={courseForm.title}
+                  onChange={(e) => setCourseForm({...courseForm, title: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                  placeholder="请输入课程名称"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程描述</label>
+                <textarea
+                  value={courseForm.description}
+                  onChange={(e) => setCourseForm({...courseForm, description: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                  placeholder="请输入课程描述"
+                  rows={3}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">授课教师</label>
+                <input
+                  type="text"
+                  value={courseForm.teacher}
+                  onChange={(e) => setCourseForm({...courseForm, teacher: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                  placeholder="请输入授课教师"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">所属学院 *</label>
+                <select
+                  value={courseForm.department}
+                  onChange={(e) => setCourseForm({...courseForm, department: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                >
+                  <option value="">选择学院</option>
+                  <option value="数学与统计学院">数学与统计学院</option>
+                  <option value="外国语学院">外国语学院</option>
+                  <option value="体育学院">体育学院</option>
+                  <option value="管理学院">管理学院</option>
+                  <option value="艺术学院">艺术学院</option>
+                  <option value="计算机学院">计算机学院</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">课程类型 *</label>
+                <select
+                  value={courseForm.type}
+                  onChange={(e) => setCourseForm({...courseForm, type: e.target.value})}
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                >
+                  <option value="专选课">专选课</option>
+                  <option value="通识课">通识课</option>
+                  <option value="体育课">体育课</option>
+                </select>
+              </div>
+              <button
+                type="submit"
+                disabled={submittingCourse}
+                className="w-full bg-[#1e3a5f] text-white py-3 rounded-xl text-sm font-bold hover:bg-[#2d4a6f] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {submittingCourse && <Loader2 className="w-4 h-4 animate-spin" />}
+                创建课程
+              </button>
+            </form>
           )}
         </div>
       </div>
@@ -1389,16 +1505,23 @@ const Index = () => {
   const [userRole, setUserRole] = useState('student');
 
   useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
+    const loadUserInfo = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) return;
       try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        setUserName(payload.name || payload.email || '');
-        setUserRole(payload.role || 'student');
+        const res = await fetch('/api/auth/me', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success && data.data.user) {
+          setUserName(data.data.user.name || data.data.user.email || '');
+          setUserRole(data.data.user.role || 'student');
+        }
       } catch {
         // ignore
       }
-    }
+    };
+    loadUserInfo();
   }, []);
 
   // Load initial data
