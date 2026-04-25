@@ -8,7 +8,7 @@ import {
   BookOpen, Search, Star, ThumbsUp, MessageCircle, Flag,
   Menu, X, ChevronRight, Filter, SlidersHorizontal,
   LogOut, Shield, TrendingUp, Users, CheckCircle, BarChart3,
-  ArrowLeft, Send, AlertTriangle, Loader2
+  ArrowLeft, Send, AlertTriangle, Loader2, User, Heart
 } from 'lucide-react';
 
 // ============================================
@@ -135,6 +135,13 @@ const Navbar = ({
           {/* Right Actions */}
           <div className="flex items-center gap-3">
             <span className="hidden sm:block text-sm text-[#5a7184]">{userName}</span>
+            <button
+              onClick={() => onNavigate('profile')}
+              className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-[#5a7184] border border-[#dde3ec] px-3 py-2 rounded-lg hover:bg-[#f5f7fa] hover:text-[#1e3a5f] transition-all"
+            >
+              <User className="w-4 h-4" />
+              个人中心
+            </button>
             <button
               onClick={onLogout}
               className="hidden sm:flex items-center gap-1.5 text-sm font-medium text-[#5a7184] border border-[#dde3ec] px-3 py-2 rounded-lg hover:bg-[#f5f7fa] hover:text-[#1e3a5f] transition-all"
@@ -697,6 +704,8 @@ const CourseDetailView = ({
   onComment,
   onReport,
   onWriteReview,
+  onToggleFavorite,
+  isFavorited,
 }: {
   course: Course;
   reviews: Review[];
@@ -706,6 +715,8 @@ const CourseDetailView = ({
   onComment: (r: Review) => void;
   onReport: (r: Review) => void;
   onWriteReview: () => void;
+  onToggleFavorite: () => void;
+  isFavorited: boolean;
 }) => {
   // Calculate course ratings based on reviews
   let avgRating = Number(course.avgRating);
@@ -787,12 +798,25 @@ const CourseDetailView = ({
       {/* Reviews Section */}
       <div className="flex items-center justify-between mb-6">
         <h2 className="font-serif text-2xl font-bold text-[#0f1f35]">学生评价 ({reviews.length})</h2>
-        <button
-          onClick={onWriteReview}
-          className="bg-[#1e3a5f] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors"
-        >
-          写评价
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={onToggleFavorite}
+            className={`flex items-center gap-1.5 px-4 py-2.5 rounded-xl text-sm font-semibold transition-colors ${
+              isFavorited
+                ? 'bg-red-50 text-red-500 border border-red-200 hover:bg-red-100'
+                : 'border border-[#dde3ec] text-[#5a7184] hover:bg-[#f5f7fa] hover:text-[#1e3a5f]'
+            }`}
+          >
+            <Heart className={`w-4 h-4 ${isFavorited ? 'fill-red-500' : ''}`} />
+            {isFavorited ? '已收藏' : '收藏'}
+          </button>
+          <button
+            onClick={onWriteReview}
+            className="bg-[#1e3a5f] text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-[#2d6a9f] transition-colors"
+          >
+            写评价
+          </button>
+        </div>
       </div>
 
       {reviews.length === 0 ? (
@@ -1035,6 +1059,236 @@ const WriteReviewView = ({
 };
 
 // ============================================
+// Profile View
+// ============================================
+const ProfileView = ({
+  onCourseClick,
+  onLogout,
+}: {
+  onCourseClick: (id: string) => void;
+  onLogout: () => void;
+}) => {
+  const [activeTab, setActiveTab] = useState('info');
+  const [userProfile, setUserProfile] = useState<{ id: string; name: string; email: string; role: string; reviews: Review[] } | null>(null);
+  const [favoriteCourses, setFavoriteCourses] = useState<Course[]>([]);
+  const [loading, setLoading] = useState(false);
+  
+  // Edit profile state
+  const [editName, setEditName] = useState('');
+  const [editPassword, setEditPassword] = useState('');
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    loadProfile();
+  }, []);
+
+  const loadProfile = async () => {
+    setLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) return;
+      
+      // Load user profile
+      const profileRes = await fetch('/api/users/profile', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const profileData = await profileRes.json();
+      if (profileData.success) {
+        setUserProfile(profileData.data);
+        setEditName(profileData.data.name);
+      }
+      
+      // Load favorite courses
+      const favRes = await fetch('/api/favorites', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const favData = await favRes.json();
+      if (favData.success) {
+        setFavoriteCourses(favData.data);
+      }
+    } catch {
+      toast.error('加载失败');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveProfile = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setSaving(true);
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch('/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: editName,
+          password: editPassword || undefined
+        })
+      });
+      const data = await res.json();
+      if (data.success) {
+        toast.success('资料更新成功');
+        setUserProfile((prev) => prev ? { ...prev, name: editName } : null);
+        setEditPassword('');
+      } else {
+        toast.error(data.message || '更新失败');
+      }
+    } catch {
+      toast.error('更新失败');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleRemoveFavorite = async (courseId: string) => {
+    try {
+      const token = localStorage.getItem('token');
+      const res = await fetch(`/api/favorites/${courseId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        setFavoriteCourses((prev) => prev.filter((c) => c.id !== courseId));
+        toast.success('已取消收藏');
+      }
+    } catch {
+      toast.error('操作失败');
+    }
+  };
+
+  return (
+    <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <h2 className="font-serif text-2xl font-bold text-[#1e3a5f] mb-6">个人中心</h2>
+      
+      <div className="bg-white rounded-2xl border border-[#dde3ec] shadow-[0_4px_12px_-1px_rgb(30_58_95/0.08)]">
+        <div className="flex border-b border-[#dde3ec]">
+          {[
+            { key: 'info', label: '个人资料' },
+            { key: 'reviews', label: '我的评价' },
+            { key: 'favorites', label: '收藏课程' },
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-6 py-4 text-sm font-medium transition-colors border-b-2 ${
+                activeTab === tab.key
+                  ? 'text-[#1e3a5f] border-[#1e3a5f] font-semibold'
+                  : 'text-[#5a7184] border-transparent hover:border-[#dde3ec] hover:text-[#1e3a5f]'
+              }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div className="p-6">
+          {loading ? (
+            <div className="flex justify-center py-8"><Loader2 className="w-6 h-6 animate-spin text-[#1e3a5f]" /></div>
+          ) : activeTab === 'info' ? (
+            <form onSubmit={handleSaveProfile} className="max-w-md mx-auto space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">姓名</label>
+                <input
+                  type="text"
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">邮箱</label>
+                <input
+                  type="email"
+                  value={userProfile?.email || ''}
+                  disabled
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm bg-[#f5f7fa] text-[#5a7184]"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0f1f35] mb-1">新密码（不修改请留空）</label>
+                <input
+                  type="password"
+                  value={editPassword}
+                  onChange={(e) => setEditPassword(e.target.value)}
+                  className="w-full px-4 py-2.5 border border-[#dde3ec] rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#1e3a5f] focus:border-transparent"
+                  placeholder="输入新密码"
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={saving}
+                className="w-full bg-[#1e3a5f] text-white py-3 rounded-xl text-sm font-bold hover:bg-[#2d4a6f] transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
+              >
+                {saving && <Loader2 className="w-4 h-4 animate-spin" />}
+                保存修改
+              </button>
+            </form>
+          ) : activeTab === 'reviews' ? (
+            userProfile?.reviews && userProfile.reviews.length > 0 ? (
+              <div className="space-y-4">
+                {userProfile.reviews.map((review) => (
+                  <div key={review.id} className="border border-[#dde3ec] rounded-xl p-4">
+                    <div className="flex items-center gap-2 mb-2">
+                      <span className="text-xs font-medium text-[#2d6a9f] bg-[#f5f7fa] px-2.5 py-1 rounded-full">
+                        {review.courseName || review.courseId}
+                      </span>
+                      <span className="text-xs text-[#5a7184]">{formatDate(review.createdAt)}</span>
+                      <div className="flex items-center gap-1">
+                        <Star className="w-3.5 h-3.5 text-[#f59e0b] fill-[#f59e0b]" />
+                        <span className="text-xs font-bold text-[#0f1f35]">{review.rating}.0</span>
+                      </div>
+                    </div>
+                    <p className="text-sm text-[#0f1f35]">{review.content}</p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-[#5a7184] py-8">暂无评价</p>
+            )
+          ) : (
+            favoriteCourses.length > 0 ? (
+              <div className="space-y-3">
+                {favoriteCourses.map((course) => (
+                  <div key={course.id} className="border border-[#dde3ec] rounded-xl p-4 flex items-center justify-between">
+                    <div 
+                      className="flex-1 cursor-pointer hover:text-[#2d6a9f]"
+                      onClick={() => onCourseClick(course.id)}
+                    >
+                      <div className="flex items-center gap-2 mb-1">
+                        <h4 className="font-medium text-[#0f1f35]">{course.name}</h4>
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-[#f5f7fa] text-[#5a7184]">
+                          {course.type}
+                        </span>
+                      </div>
+                      <p className="text-sm text-[#5a7184]">
+                        {course.college} · {typeof course.teacher === 'string' ? course.teacher : course.teacher?.name || '未知教师'}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() => handleRemoveFavorite(course.id)}
+                      className="flex items-center gap-1.5 border border-[#dde3ec] text-[#dc2626] px-4 py-2 rounded-lg text-xs font-semibold hover:bg-red-50 transition-colors ml-4"
+                    >
+                      取消收藏
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-center text-[#5a7184] py-8">暂无收藏课程</p>
+            )
+          )}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ============================================
 // Admin View
 // ============================================
 const AdminView = () => {
@@ -1142,10 +1396,10 @@ const AdminView = () => {
   const handleEditCourse = (course: Course) => {
     setEditingCourse(course);
     setCourseForm({
-      title: course.name || course.title || '',
+      title: course.name || '',
       description: course.description || '',
-      teacher: course.teacher || '',
-      department: course.college || course.department || '',
+      teacher: typeof course.teacher === 'string' ? course.teacher : course.teacher?.name || '',
+      department: course.college || '',
       type: course.type || '专选课'
     });
   };
@@ -1397,13 +1651,13 @@ const AdminView = () => {
                       <div key={course.id} className="border border-[#dde3ec] rounded-xl p-4 flex items-center justify-between">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-1">
-                            <h4 className="font-medium text-[#0f1f35]">{course.name || course.title}</h4>
+                            <h4 className="font-medium text-[#0f1f35]">{course.name}</h4>
                             <span className="text-xs px-2 py-0.5 rounded-full bg-[#f5f7fa] text-[#5a7184]">
                               {course.type}
                             </span>
                           </div>
                           <p className="text-sm text-[#5a7184]">
-                            {course.college || course.department} · {course.teacher || '未知教师'}
+                            {course.college} · {typeof course.teacher === 'string' ? course.teacher : course.teacher?.name || '未知教师'}
                           </p>
                         </div>
                         <div className="flex gap-2">
@@ -1634,6 +1888,8 @@ const Index = () => {
   const [courseReviews, setCourseReviews] = useState<Review[]>([]);
   const [allReviews, setAllReviews] = useState<Review[]>([]);
   const [likedIds, setLikedIds] = useState<string[]>([]);
+  const [favorites, setFavorites] = useState<string[]>([]);
+  const [favoriteCourses, setFavoriteCourses] = useState<Course[]>([]);
   const [colleges, setColleges] = useState<string[]>([]);
   const [coursesLoading, setCoursesLoading] = useState(false);
   const [filters, setFilters] = useState<CourseFilters>({ college: '', type: '', search: '', sortBy: '' });
@@ -1719,6 +1975,24 @@ const Index = () => {
       }
     };
     loadLikes();
+
+    const loadFavorites = async () => {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+        const res = await fetch('/api/favorites', {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (data.success) {
+          setFavoriteCourses(data.data);
+          setFavorites(data.data.map((c: Course) => c.id));
+        }
+      } catch {
+        // silent
+      }
+    };
+    loadFavorites();
   }, []);
 
   // Apply filters
@@ -1929,6 +2203,36 @@ const Index = () => {
     }
   };
 
+  const handleToggleFavorite = async (course: Course) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        toast.error('请先登录');
+        return;
+      }
+      const isFavorited = favorites.includes(course.id);
+      const method = isFavorited ? 'DELETE' : 'POST';
+      const res = await fetch(`/api/favorites/${course.id}`, {
+        method,
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.success) {
+        if (isFavorited) {
+          setFavorites((prev) => prev.filter((id) => id !== course.id));
+          setFavoriteCourses((prev) => prev.filter((c) => c.id !== course.id));
+          toast.success('已取消收藏');
+        } else {
+          setFavorites((prev) => [...prev, course.id]);
+          setFavoriteCourses((prev) => [...prev, course]);
+          toast.success('已添加收藏');
+        }
+      }
+    } catch {
+      toast.error('操作失败');
+    }
+  };
+
   const handleLogout = () => {
     logout();
   };
@@ -1991,6 +2295,8 @@ const Index = () => {
             onWriteReview={() => {
               setCurrentView('write-review');
             }}
+            onToggleFavorite={() => handleToggleFavorite(courseDetail)}
+            isFavorited={favorites.includes(courseDetail.id)}
           />
         )}
 
@@ -2044,6 +2350,13 @@ const Index = () => {
                 }
               }, 50);
             }}
+          />
+        )}
+
+        {currentView === 'profile' && (
+          <ProfileView
+            onCourseClick={handleCourseClick}
+            onLogout={handleLogout}
           />
         )}
 

@@ -534,6 +534,9 @@ const reviews = [
   }
 ];
 
+// In-memory favorites store (userId -> array of courseIds)
+const favorites = {};
+
 // In-memory users store
 const users = [
   {
@@ -932,9 +935,156 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Catch-all route for frontend
-app.get('*', (req, res) => {
-  res.sendFile(path.join(__dirname, '../frontend/dist', 'index.html'));
+// ========== Favorites API ==========
+
+// Get user's favorite courses
+app.get('/api/favorites', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ success: false, message: '未授权' });
+  }
+  const tokenParts = token.split('-');
+  const userId = tokenParts[1];
+  
+  const userFavorites = favorites[userId] || [];
+  const favoriteCourses = courses.filter(c => userFavorites.includes(c.id));
+  const transformedCourses = favoriteCourses.map(c => ({
+    id: c.id,
+    name: c.title,
+    code: c.code || `COURSE${c.id}`,
+    college: c.department,
+    type: c.type,
+    description: c.description || null,
+    imageUrl: c.imageUrl || null,
+    credits: c.credits || null,
+    avgRating: c.rating || 0,
+    avgGrading: 0,
+    avgWorkload: 0,
+    avgRecommend: 0,
+    reviewCount: c.reviewCount || 0,
+    teacher: c.teacher,
+    createdAt: c.createdAt || new Date().toISOString(),
+    updatedAt: c.updatedAt || new Date().toISOString()
+  }));
+  
+  res.json({ success: true, data: transformedCourses });
+});
+
+// Add course to favorites
+app.post('/api/favorites/:courseId', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ success: false, message: '未授权' });
+  }
+  const tokenParts = token.split('-');
+  const userId = tokenParts[1];
+  
+  const courseId = req.params.courseId;
+  if (!favorites[userId]) {
+    favorites[userId] = [];
+  }
+  if (!favorites[userId].includes(courseId)) {
+    favorites[userId].push(courseId);
+  }
+  
+  res.json({ success: true, message: '已添加收藏' });
+});
+
+// Remove course from favorites
+app.delete('/api/favorites/:courseId', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ success: false, message: '未授权' });
+  }
+  const tokenParts = token.split('-');
+  const userId = tokenParts[1];
+  
+  const courseId = req.params.courseId;
+  if (favorites[userId]) {
+    favorites[userId] = favorites[userId].filter(id => id !== courseId);
+  }
+  
+  res.json({ success: true, message: '已取消收藏' });
+});
+
+// Check if course is favorited
+app.get('/api/favorites/:courseId/check', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ success: false, message: '未授权' });
+  }
+  const tokenParts = token.split('-');
+  const userId = tokenParts[1];
+  
+  const courseId = req.params.courseId;
+  const isFavorited = favorites[userId]?.includes(courseId) || false;
+  
+  res.json({ success: true, data: isFavorited });
+});
+
+// ========== User Profile API ==========
+
+// Get user profile
+app.get('/api/users/profile', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ success: false, message: '未授权' });
+  }
+  const tokenParts = token.split('-');
+  const userId = tokenParts[1];
+  
+  const user = users.find(u => u.id === userId);
+  if (!user) {
+    return res.status(404).json({ success: false, message: '用户不存在' });
+  }
+  
+  // Get user's reviews
+  const userReviews = reviews.filter(r => r.userId === userId);
+  
+  res.json({
+    success: true,
+    data: {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      reviews: userReviews
+    }
+  });
+});
+
+// Update user profile
+app.put('/api/users/profile', (req, res) => {
+  const token = req.headers.authorization?.replace('Bearer ', '');
+  if (!token) {
+    return res.status(401).json({ success: false, message: '未授权' });
+  }
+  const tokenParts = token.split('-');
+  const userId = tokenParts[1];
+  
+  const { name, password } = req.body;
+  const userIndex = users.findIndex(u => u.id === userId);
+  
+  if (userIndex === -1) {
+    return res.status(404).json({ success: false, message: '用户不存在' });
+  }
+  
+  if (name) {
+    users[userIndex].name = name;
+  }
+  if (password) {
+    users[userIndex].password = password;
+  }
+  
+  res.json({
+    success: true,
+    data: {
+      id: users[userIndex].id,
+      name: users[userIndex].name,
+      email: users[userIndex].email,
+      role: users[userIndex].role
+    }
+  });
 });
 
 // Start server

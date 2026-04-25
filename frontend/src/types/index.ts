@@ -129,4 +129,4 @@ export interface CourseFilters {
 // ============================================
 // View Types
 // ============================================
-export type AppView = 'home' | 'courses' | 'course-detail' | 'reviews' | 'write-review' | 'admin';
+export type AppView = 'home' | 'courses' | 'course-detail' | 'reviews' | 'write-review' | 'admin' | 'profile';
