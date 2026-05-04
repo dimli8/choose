@@ -385,12 +385,23 @@ const FilterPanel = ({
       <div>
         <label className="block text-xs font-semibold text-[#5a7184] uppercase tracking-wide mb-2">课程类型</label>
         <div className="space-y-2">
+          <label className="flex items-center gap-3 cursor-pointer">
+            <input
+              type="radio"
+              name="courseType"
+              checked={filters.type === ''}
+              onChange={(e) => setFilters({ ...filters, type: '' })}
+              className="accent-[#1e3a5f]"
+            />
+            <span className="text-sm text-[#0f1f35]">全部类型</span>
+          </label>
           {['通识课', '专选课', '体育课'].map((t) => (
             <label key={t} className="flex items-center gap-3 cursor-pointer">
               <input
-                type="checkbox"
-                checked={filters.type === t || filters.type === ''}
-                onChange={(e) => setFilters({ ...filters, type: e.target.checked ? t : '' })}
+                type="radio"
+                name="courseType"
+                checked={filters.type === t}
+                onChange={(e) => setFilters({ ...filters, type: t })}
                 className="accent-[#1e3a5f]"
               />
               <span className="text-sm text-[#0f1f35]">{t}</span>

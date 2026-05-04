@@ -913,26 +913,35 @@ app.get('/api/courses', (req, res) => {
     );
   }
   
+  // Calculate review counts for each course before sorting
+  const coursesWithReviewCounts = filteredCourses.map(c => {
+    const courseReviews = reviews.filter(r => r.courseId === c.id);
+    return {
+      ...c,
+      reviewCount: courseReviews.length
+    };
+  });
+  
   // Sort courses
   if (sortBy) {
     switch (sortBy) {
       case 'grading':
-        filteredCourses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        coursesWithReviewCounts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
         break;
       case 'reviews':
-        filteredCourses.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
+        coursesWithReviewCounts.sort((a, b) => (b.reviewCount || 0) - (a.reviewCount || 0));
         break;
       default:
         // Default sort by rating
-        filteredCourses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+        coursesWithReviewCounts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
     }
   } else {
     // Default sort by rating
-    filteredCourses.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+    coursesWithReviewCounts.sort((a, b) => (b.rating || 0) - (a.rating || 0));
   }
   
   // Transform courses to match frontend expected format
-  const transformedCourses = filteredCourses.map(c => ({
+  const transformedCourses = coursesWithReviewCounts.map(c => ({
     id: c.id,
     name: c.title,
     code: c.code || `COURSE${c.id}`,
